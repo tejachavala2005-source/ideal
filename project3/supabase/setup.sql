@@ -38,7 +38,7 @@ create table if not exists public.staff_members (
     )
 );
 
-alter table public.profiles enable row level security;
+alter table public.profiles enable row level security;  
 alter table public.registrations enable row level security;
 alter table public.staff_members enable row level security;
 
