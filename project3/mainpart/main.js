@@ -60,27 +60,21 @@ function registerEvent(eventName, clubName) {
         return;
     }
 
-    var result =
-        IdealAuth.addRegistration(
+    IdealAuth.addRegistration(
             "Competition",
             eventName,
             clubName || ""
-        );
-
-    if (result === "duplicate") {
-
-        showMessage(
-            "You are already registered for " + eventName
-        );
-
-    } else {
-
-        showMessage(
-            "Registered successfully for " +
-            eventName +
-            " \u2705"
-        );
-    }
+        )
+        .then(function (result) {
+            showMessage(
+                result === "duplicate"
+                    ? "You are already registered for " + eventName
+                    : "Registered successfully for " + eventName + " \u2705"
+            );
+        })
+        .catch(function (error) {
+            showMessage("Registration failed: " + error.message);
+        });
 }
 
 
@@ -137,9 +131,6 @@ function showMyRegistrations() {
         return;
     }
 
-    var list =
-        IdealAuth.getRegistrations();
-
     var box =
         document.getElementById("regModal");
 
@@ -176,40 +167,29 @@ function showMyRegistrations() {
         );
     }
 
-    var html = "";
-
-    if (list.length === 0) {
-
-        html =
-            "<p>No registrations yet. Register for a competition to see it here.</p>";
-
-    } else {
-
-        list.forEach(function (r) {
-
-            var li =
-                document.createElement("div");
-
-            li.textContent =
-                r.title +
-                (r.club ? " \u2022 " + r.club : "") +
-                " (" +
-                r.type +
-                ", " +
-                r.date +
-                ")";
-
-            html +=
-                "<div class='reg-item'>" +
-                li.innerHTML +
-                "</div>";
-        });
-    }
-
-    box.querySelector(".reg-list").innerHTML =
-        html;
-
     box.classList.add("show");
+    box.querySelector(".reg-list").textContent = "Loading your registrations...";
+    IdealAuth.getRegistrations()
+        .then(function (list) {
+            var html = "";
+            if (list.length === 0) {
+                html = "<p>No registrations yet. Register for a competition to see it here.</p>";
+            } else {
+                list.forEach(function (registration) {
+                    var item = document.createElement("div");
+                    item.textContent =
+                        registration.title +
+                        (registration.club ? " \u2022 " + registration.club : "") +
+                        " (" + registration.type + ", " + registration.date + ")";
+                    html += "<div class='reg-item'>" + item.innerHTML + "</div>";
+                });
+            }
+            box.querySelector(".reg-list").innerHTML = html;
+        })
+        .catch(function (error) {
+            box.querySelector(".reg-list").textContent =
+                "Could not load registrations: " + error.message;
+        });
 }
 
 
@@ -809,7 +789,7 @@ document.addEventListener(
 
         var ref = "IC-" + Math.floor(1000 + Math.random() * 9000);
 
-        // front-end demo: stored in this browser only (same as login/registration)
+        // Contact reports remain local; only accounts and club registrations use Supabase.
         try {
             var list = JSON.parse(localStorage.getItem("idealReports") || "[]");
             list.push({

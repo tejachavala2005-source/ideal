@@ -1,8 +1,7 @@
 /* =====================================================
    IDEAL COLLEGE CLUBS - STAFF (ADMIN / COORDINATOR) AUTH
 
-   One shared staff token (see staff-config.js) is used for
-   both Admin and Coordinator login.
+   Staff access is disabled for the public demo.
 
    FRONT-END DEMO: for real security move this to a server.
 ===================================================== */

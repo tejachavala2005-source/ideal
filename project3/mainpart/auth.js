@@ -1,7 +1,7 @@
 /* =====================================================
    IDEAL COLLEGE CLUBS - SHARED AUTH
    Student / Staff / Admin Module Switching
-   Front-end demo using localStorage/sessionStorage
+   Supabase-backed student accounts and registrations
 ===================================================== */
 
 (function () {
@@ -28,9 +28,7 @@
        STORAGE KEYS
     ===================================================== */
 
-    var USERS_KEY = "ic_users";
     var SESSION_KEY = "ic_session";
-    var REGS_KEY = "ic_registrations";
 
 
     /* =====================================================
@@ -72,16 +70,6 @@
     }
 
 
-    function users() {
-
-        return read(
-            localStorage,
-            USERS_KEY,
-            {}
-        );
-    }
-
-
     function norm(roll) {
 
         return String(
@@ -92,91 +80,50 @@
     }
 
 
-    /* =====================================================
-       PASSWORD HASHING
-    ===================================================== */
-
-    function fallbackHash(str) {
-
-        var h1 = 5381;
-        var h2 = 52711;
-
-        for (
-            var i = 0;
-            i < str.length;
-            i++
-        ) {
-
-            var c =
-                str.charCodeAt(i);
-
-            h1 =
-                (h1 * 33) ^ c;
-
-            h2 =
-                (h2 * 33) ^ c;
+    function client() {
+        if (!window.IdealCloud) {
+            throw new Error("Supabase is not configured. Check the Supabase setup instructions.");
         }
-
-        return "f" +
-            (h1 >>> 0).toString(16) +
-            (h2 >>> 0).toString(16);
+        return window.IdealCloud;
     }
 
 
-    function hash(
-        roll,
-        password
-    ) {
-
-        var text =
-            "ideal-college|" +
-            norm(roll) +
-            "|" +
-            password;
-
-
-        if (
-            window.crypto &&
-            crypto.subtle &&
-            window.TextEncoder
-        ) {
-
-            return crypto.subtle
-                .digest(
-                    "SHA-256",
-                    new TextEncoder()
-                        .encode(text)
-                )
-
-                .then(function (buf) {
-
-                    return Array.prototype
-                        .map.call(
-                            new Uint8Array(buf),
-                            function (b) {
-
-                                return (
-                                    "0" +
-                                    b.toString(16)
-                                ).slice(-2);
-                            }
-                        )
-                        .join("");
-
-                })
-
-                .catch(function () {
-
-                    return fallbackHash(
-                        text
-                    );
-                });
+    function loginEmail(roll) {
+        var key = norm(roll);
+        var encoded = btoa(unescape(encodeURIComponent(key)))
+            .replace(/\+/g, "-")
+            .replace(/\//g, "_")
+            .replace(/=+$/g, "");
+        if (encoded.length > 56) {
+            throw new Error("Roll number is too long to create a demo account.");
         }
+        return "student." + encoded + "@students.idealcollege.example.com";
+    }
 
 
-        return Promise.resolve(
-            fallbackHash(text)
-        );
+    function profileFromRow(row) {
+        return {
+            id: row.id,
+            name: row.full_name,
+            roll: row.roll_number,
+            mobile: row.mobile,
+            year: row.year,
+            group: row.group_name,
+            role: row.role
+        };
+    }
+
+
+    function saveSession(profile, remember) {
+        Auth.clearSession();
+        window.IdealRememberSession = Boolean(remember);
+        if (!write(
+            remember ? localStorage : sessionStorage,
+            SESSION_KEY,
+            profile
+        )) {
+            throw new Error("Could not save your sign-in state. Check your browser storage settings.");
+        }
     }
 
 
@@ -237,71 +184,45 @@
         ================================================= */
 
         register: function (data) {
-
-            var key =
-                norm(data.roll);
-
-            var all =
-                users();
-
-
-            if (all[key]) {
-
-                return Promise.reject(
-                    new Error(
-                        "This roll number is already registered. Please login."
-                    )
-                );
+            var key = norm(data.roll);
+            if (!key || key.length > 40) {
+                return Promise.reject(new Error("Enter a roll number of 1 to 40 characters."));
             }
 
-
-            return hash(
-                key,
-                data.password
-            )
-
-            .then(function (h) {
-
-                all[key] = {
-
-                    name: data.name,
-
-                    roll: key,
-
-                    mobile:
-                        data.mobile,
-
-                    year:
-                        data.year,
-
-                    group:
-                        data.group,
-
-                    hash: h,
-
-                    role: "STUDENT",
-
-                    createdAt:
-                        new Date()
-                            .toISOString()
-                };
-
-
-                if (
-                    !write(
-                        localStorage,
-                        USERS_KEY,
-                        all
-                    )
-                ) {
-
-                    throw new Error(
-                        "Could not save your account. Please enable browser storage."
-                    );
+            var supabase = client();
+            window.IdealRememberSession = true;
+            return supabase.auth.signUp({
+                email: loginEmail(key),
+                password: data.password,
+                options: {
+                    data: {
+                        roll_number: key,
+                        full_name: data.name.trim(),
+                        mobile: data.mobile,
+                        year: data.year,
+                        group_name: data.group
+                    }
                 }
-
-
-                return all[key];
+            }).then(function (result) {
+                if (result.error) {
+                    throw result.error;
+                }
+                if (!result.data.session) {
+                    throw new Error("Email confirmation is enabled in Supabase. Disable it for this roll-number demo, then register again.");
+                }
+                return profileForUser(supabase, result.data.user.id)
+                    .then(function (profile) {
+                        saveSession(profile, true);
+                        return profile;
+                    })
+                    .catch(function (error) {
+                        return supabase.auth.signOut().then(function (signOutResult) {
+                            if (signOutResult.error) {
+                                throw new Error(error.message + " Sign-out cleanup also failed: " + signOutResult.error.message);
+                            }
+                            throw error;
+                        });
+                    });
             });
         },
 
@@ -316,77 +237,33 @@
             remember
         ) {
 
-            var key =
-                norm(roll);
-
-            var user =
-                users()[key];
-
-
-            if (!user) {
-
-                return Promise.reject(
-                    new Error(
-                        "No account found for this roll number. Please register first."
-                    )
-                );
+            var key = norm(roll);
+            if (!key || key.length > 40) {
+                return Promise.reject(new Error("Enter a valid roll number."));
             }
 
-
-            return hash(
-                key,
-                password
-            )
-
-            .then(function (h) {
-
-                if (
-                    h !== user.hash
-                ) {
-
-                    throw new Error(
-                        "Incorrect password. Please try again."
-                    );
+            window.IdealRememberSession = Boolean(remember);
+            var supabase = client();
+            return supabase.auth.signInWithPassword({
+                email: loginEmail(key),
+                password: password
+            }).then(function (result) {
+                if (result.error) {
+                    throw result.error;
                 }
-
-
-                var session = {
-
-                    name:
-                        user.name,
-
-                    roll:
-                        user.roll,
-
-                    mobile:
-                        user.mobile,
-
-                    year:
-                        user.year,
-
-                    group:
-                        user.group,
-
-                    role:
-                        "STUDENT"
-                };
-
-
-                Auth.clearSession();
-
-
-                write(
-                    remember
-                        ? localStorage
-                        : sessionStorage,
-
-                    SESSION_KEY,
-
-                    session
-                );
-
-
-                return session;
+                return profileForUser(supabase, result.data.user.id)
+                    .then(function (profile) {
+                        saveSession(profile, remember);
+                        return profile;
+                    })
+                    .catch(function (error) {
+                        return supabase.auth.signOut().then(function (signOutResult) {
+                            if (signOutResult.error) {
+                                throw new Error(error.message + " Sign-out cleanup also failed: " + signOutResult.error.message);
+                            }
+                            throw error;
+                        });
+                    });
             });
         },
 
@@ -412,8 +289,12 @@
         ================================================= */
 
         logout: function () {
-
             Auth.clearSession();
+            return client().auth.signOut().then(function (result) {
+                if (result.error) {
+                    throw result.error;
+                }
+            });
         },
 
 
@@ -601,15 +482,11 @@
                LOGOUT CURRENT ACCOUNT
             ----------------------------------------- */
 
-            Auth.logout();
-
-
-            /* -----------------------------------------
-               OPEN TARGET MODULE
-            ----------------------------------------- */
-
-            window.location.href =
-                targetURL;
+            Auth.logout().then(function () {
+                window.location.href = targetURL;
+            }).catch(function (error) {
+                window.alert("Could not log out: " + error.message);
+            });
         },
 
 
@@ -622,74 +499,29 @@
             title,
             club
         ) {
-
-            var user =
-                Auth.current();
-
-
-            if (!user) {
-
-                return false;
-            }
-
-
-            var all =
-                read(
-                    localStorage,
-                    REGS_KEY,
-                    {}
-                );
-
-
-            var list =
-                all[user.roll] || [];
-
-
-            for (
-                var i = 0;
-                i < list.length;
-                i++
-            ) {
-
-                if (
-                    list[i].type === type &&
-                    list[i].title === title
-                ) {
-
-                    return "duplicate";
+            var supabase = client();
+            return supabase.auth.getUser().then(function (result) {
+                if (result.error) {
+                    throw result.error;
                 }
-            }
-
-
-            list.push({
-
-                type:
-                    type,
-
-                title:
-                    title,
-
-                club:
-                    club || "",
-
-                date:
-                    new Date()
-                        .toLocaleDateString()
+                if (!result.data.user) {
+                    throw new Error("Please log in before registering.");
+                }
+                return supabase.from("registrations").insert({
+                    student_id: result.data.user.id,
+                    type: type,
+                    title: title,
+                    club: club || ""
+                });
+            }).then(function (result) {
+                if (result.error) {
+                    if (result.error.code === "23505") {
+                        return "duplicate";
+                    }
+                    throw result.error;
+                }
+                return true;
             });
-
-
-            all[user.roll] =
-                list;
-
-
-            write(
-                localStorage,
-                REGS_KEY,
-                all
-            );
-
-
-            return true;
         },
 
 
@@ -698,22 +530,28 @@
         ================================================= */
 
         getRegistrations: function () {
+            var supabase = client();
+            return supabase.from("registrations")
+                .select("type,title,club,created_at")
+                .order("created_at", { ascending: false })
+                .then(function (result) {
+                    if (result.error) {
+                        throw result.error;
+                    }
+                    return result.data.map(function (row) {
+                        return {
+                            type: row.type,
+                            title: row.title,
+                            club: row.club,
+                            date: new Date(row.created_at).toLocaleDateString()
+                        };
+                    });
+                });
+        },
 
-            var user =
-                Auth.current();
 
-
-            if (!user) {
-
-                return [];
-            }
-
-
-            return read(
-                localStorage,
-                REGS_KEY,
-                {}
-            )[user.roll] || [];
+        resetPassword: function () {
+            return Promise.reject(new Error("Password reset is unavailable for roll-number accounts. Contact the demo administrator."));
         },
 
 
@@ -736,6 +574,20 @@
                 STAFF_URL
         }
     };
+
+
+    function profileForUser(supabase, userId) {
+        return supabase.from("profiles")
+            .select("id,roll_number,full_name,mobile,year,group_name,role")
+            .eq("id", userId)
+            .single()
+            .then(function (result) {
+                if (result.error) {
+                    throw result.error;
+                }
+                return profileFromRow(result.data);
+            });
+    }
 
 
     /* =====================================================
@@ -871,11 +723,11 @@
                 .addEventListener(
                     "click",
                     function () {
-
-                        Auth.logout();
-
-                        window.location.href =
-                            HOME_URL;
+                        Auth.logout().then(function () {
+                            window.location.href = HOME_URL;
+                        }).catch(function (error) {
+                            window.alert("Could not log out: " + error.message);
+                        });
                     }
                 );
 
@@ -901,56 +753,6 @@
 
                 '</a>';
         }
-
-
-        /* -----------------------------------------
-           STAFF BUTTON
-        ----------------------------------------- */
-
-        var staffLink =
-            document.createElement(
-                "a"
-            );
-
-
-        staffLink.className =
-            "auth-btn auth-staff";
-
-
-        staffLink.href =
-            STAFF_URL;
-
-
-        staffLink.title =
-            "Admin / Coordinator login";
-
-
-        staffLink.textContent =
-            "Staff";
-
-
-        /*
-           IMPORTANT:
-           Use our module-switch system.
-        */
-
-        staffLink.addEventListener(
-            "click",
-            function (event) {
-
-                event.preventDefault();
-
-                Auth.switchModule(
-                    "STAFF",
-                    STAFF_URL
-                );
-            }
-        );
-
-
-        box.appendChild(
-            staffLink
-        );
 
 
         var menuBtn =
@@ -1173,45 +975,39 @@
             );
 
 
-        if (
-            form &&
-            user &&
-            clubName
-        ) {
+        if (form && clubName) {
+            form.addEventListener("submit", function (event) {
+                event.preventDefault();
+                event.stopImmediatePropagation();
 
-            form.addEventListener(
-                "submit",
-                function () {
-
-                    var mobileEl =
-                        document.getElementById(
-                            "mobile"
-                        );
-
-
-                    var okMobile =
-                        !mobileEl ||
-
-                        /^[0-9]{10}$/
-                            .test(
-                                mobileEl.value
-                                    .trim()
-                            );
-
-
-                    if (
-                        okMobile &&
-                        form.checkValidity()
-                    ) {
-
-                        Auth.addRegistration(
-                            "Club Join",
-                            clubName,
-                            clubName
-                        );
-                    }
+                if (!Auth.current()) {
+                    Auth.requireLogin();
+                    return;
                 }
-            );
+                if (!form.checkValidity()) {
+                    form.reportValidity();
+                    return;
+                }
+
+                var mobileEl = document.getElementById("mobile");
+                if (mobileEl && !/^[0-9]{10}$/.test(mobileEl.value.trim())) {
+                    window.alert("Please enter a valid 10-digit mobile number.");
+                    return;
+                }
+
+                Auth.addRegistration("Club Join", clubName, clubName)
+                    .then(function (result) {
+                        if (result === "duplicate") {
+                            window.alert("You are already registered for " + clubName + ".");
+                            return;
+                        }
+                        form.reset();
+                        window.alert("Your registration for " + clubName + " was saved.");
+                    })
+                    .catch(function (error) {
+                        window.alert("Registration failed: " + error.message);
+                    });
+            }, true);
         }
     }
 

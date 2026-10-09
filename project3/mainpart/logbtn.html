@@ -294,16 +294,14 @@
         </div>
 
         <div class="register" style="margin-top:12px">
-            Admin or Club Coordinator?
-            <a href="staff-login.html"
-   data-module-role="STAFF">
-    Staff
-</a>
+            Staff access is disabled for this demo.
         </div>
 
     </div>
 
 
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <script src="supabase-config.js"></script>
     <script src="auth.js"></script>
     <script>
         var msg = document.getElementById("msg");
@@ -346,8 +344,9 @@
         var loginForm = document.getElementById("loginForm");
         var resetForm = document.getElementById("resetForm");
         document.getElementById("forgotLink").addEventListener("click", function (e) {
-            e.preventDefault(); clearMsg();
-            loginForm.classList.add("hide"); resetForm.classList.add("show");
+            e.preventDefault();
+            clearMsg();
+            show("Password recovery is unavailable for roll-number demo accounts. Contact the demo administrator.", "error");
         });
         document.getElementById("backToLogin").addEventListener("click", function () {
             clearMsg(); resetForm.classList.remove("show"); loginForm.classList.remove("hide");

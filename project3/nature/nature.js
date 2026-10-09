@@ -44,11 +44,27 @@ function showMessage(message) {
 ===================================================== */
 
 function registerCompetition(name) {
+    if (!window.IdealAuth || !IdealAuth.current()) {
+        showMessage("Please login to register for " + name);
+        setTimeout(function () {
+            if (window.IdealAuth) {
+                IdealAuth.requireLogin();
+            }
+        }, 1200);
+        return;
+    }
 
-    showMessage(
-        "Registration selected: " + name
-    );
-
+    IdealAuth.addRegistration("Competition", name, "Nature Warrior")
+        .then(function (result) {
+            showMessage(
+                result === "duplicate"
+                    ? "You are already registered for " + name
+                    : "Registered successfully for " + name + " \u2705"
+            );
+        })
+        .catch(function (error) {
+            showMessage("Registration failed: " + error.message);
+        });
 }
 
 
