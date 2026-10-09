@@ -4,7 +4,7 @@ on:
   push:
     branches: [main]
     paths:
-      - "ideal/**"
+      - "project3/**"
       - ".github/workflows/deploy-pages.yml"
   workflow_dispatch:
 
