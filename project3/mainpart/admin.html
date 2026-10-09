@@ -13,7 +13,7 @@
     <a data-tab="overview" class="active">Overview</a>
     <a data-tab="students">Students</a>
     <a data-tab="registrations">Registrations</a>
-    <a data-tab="coordinators">Coordinators</a>
+    <a data-tab="staff">Staff access</a>
   </nav>
   <span class="who">👤 Administrator</span>
   <a class="btn ghost sm" href="main.html" style="background:transparent;color:#fff;border-color:#5b7396">Website</a>
@@ -21,6 +21,7 @@
 </header>
 
 <main class="main">
+  <p class="msg error" id="dashboardError" role="alert"></p>
 
   <!-- OVERVIEW -->
   <section class="panel show" id="p-overview">
@@ -39,7 +40,7 @@
       <button class="btn sm" id="stuCsv">⬇ Export CSV</button>
     </div>
     <div class="table-wrap"><table>
-      <thead><tr><th>Name</th><th>Roll No.</th><th>Mobile</th><th>Year</th><th>Group</th><th>Joined</th><th></th></tr></thead>
+      <thead><tr><th>Name</th><th>Roll No.</th><th>Mobile</th><th>Year</th><th>Group</th><th>Joined</th></tr></thead>
       <tbody id="stuBody"></tbody>
     </table></div>
   </section>
@@ -61,29 +62,29 @@
   </section>
 
   <!-- COORDINATORS -->
-  <section class="panel" id="p-coordinators">
-    <h2 class="title">Club Coordinators</h2>
-    <p class="lead">Admin and coordinators log in with the same staff token. Coordinators also enter their name and club.</p>
+  <section class="panel" id="p-staff">
+    <h2 class="title">Staff access</h2>
+    <p class="lead">Staff accounts and permissions are managed in Supabase, not in this browser.</p>
     <div class="card">
-      <h3>Staff token</h3>
-      <p style="font-size:14px;line-height:1.7">Staff access is disabled for the public demo. Do not re-enable client-side token authentication.
-      After a change everyone is logged out and must use the new token.</p>
+      <h3>Provisioning staff</h3>
+      <p style="font-size:14px;line-height:1.7">Create staff accounts in Supabase Authentication, then have a Supabase project administrator grant each account an ADMIN role or a COORDINATOR role assigned to one club in the <code>staff_members</code> table. Coordinators are limited to their assigned club by database row-level security.</p>
     </div>
-    <h3 style="margin-bottom:10px">Recent coordinator logins</h3>
-    <div class="table-wrap"><table>
-      <thead><tr><th>Coordinator</th><th>Club</th><th>Logged in at</th></tr></thead>
-      <tbody id="coBody"></tbody>
-    </table></div>
   </section>
 </main>
 
-<script src="staff-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script src="staff.js"></script>
 <script>
 (function () {
   var S = IdealStaff, esc = S.esc;
-  if (!S.requireRole("admin")) return;
   function $(id) { return document.getElementById(id); }
+  var users = [], registrations = [];
+
+  function showError(error) {
+    $("dashboardError").textContent = error ? "Could not load dashboard data: " + error.message : "";
+    $("dashboardError").className = error ? "msg error" : "msg";
+  }
 
   /* tabs */
   function openTab(t) {
@@ -93,7 +94,10 @@
     render();
   }
   document.querySelectorAll("#tabs a").forEach(function (a) { a.onclick = function () { openTab(a.dataset.tab); }; });
-  $("logout").onclick = function () { S.logout(); location.href = "staff-login.html"; };
+  $("logout").onclick = function () {
+    S.logout().then(function () { location.replace("staff-login.html"); })
+      .catch(showError);
+  };
 
   /* fill selects */
   $("regClub").innerHTML = '<option value="">All clubs</option>' + S.CLUBS.map(function (c) { return "<option>" + esc(c) + "</option>"; }).join("");
@@ -101,12 +105,11 @@
   function empty(cols, text) { return '<tr><td colspan="' + cols + '" class="empty">' + text + "</td></tr>"; }
 
   function renderOverview() {
-    var users = S.allUsers(), regs = S.allRegistrations(), co = S.coordinatorLog();
+    var regs = registrations;
     $("stats").innerHTML =
       '<div class="stat"><b>' + users.length + "</b><span>Registered students</span></div>" +
       '<div class="stat"><b>' + regs.length + "</b><span>Total registrations</span></div>" +
-      '<div class="stat"><b>' + regs.filter(function (r) { return r.type === "Competition"; }).length + "</b><span>Competition entries</span></div>" +
-      '<div class="stat"><b>' + co.length + "</b><span>Coordinator logins</span></div>";
+      '<div class="stat"><b>' + regs.filter(function (r) { return r.type === "Competition"; }).length + "</b><span>Competition entries</span></div>";
     $("clubBars").innerHTML = S.CLUBS.map(function (c) {
       var n = regs.filter(function (r) { return r.club === c; }).length;
       return "<div>" + esc(c) + "<b>" + n + "</b></div>";
@@ -115,19 +118,18 @@
 
   function renderStudents() {
     var q = $("stuSearch").value.toLowerCase();
-    var rows = S.allUsers().filter(function (u) {
+    var rows = users.filter(function (u) {
       return !q || (u.name + " " + u.roll + " " + u.mobile + " " + u.group).toLowerCase().indexOf(q) >= 0;
     });
     $("stuBody").innerHTML = rows.length ? rows.map(function (u) {
       return "<tr><td>" + esc(u.name) + "</td><td>" + esc(u.roll) + "</td><td>" + esc(u.mobile) + "</td><td>" + esc(u.year) +
-        "</td><td>" + esc(u.group) + "</td><td>" + esc((u.createdAt || "").slice(0, 10)) +
-        '</td><td><button class="btn danger sm" data-del="' + esc(u.roll) + '">Delete</button></td></tr>';
-    }).join("") : empty(7, "No students found.");
+        "</td><td>" + esc(u.group) + "</td><td>" + esc((u.createdAt || "").slice(0, 10)) + "</td></tr>";
+    }).join("") : empty(6, "No students found.");
   }
 
   function filteredRegs() {
     var q = $("regSearch").value.toLowerCase(), club = $("regClub").value, type = $("regType").value;
-    return S.allRegistrations().filter(function (r) {
+    return registrations.filter(function (r) {
       return (!club || r.club === club) && (!type || r.type === type) &&
         (!q || (r.name + " " + r.roll + " " + r.title + " " + r.club).toLowerCase().indexOf(q) >= 0);
     });
@@ -140,28 +142,17 @@
     }).join("") : empty(7, "No registrations yet.");
   }
 
-  function renderCoords() {
-    var list = S.coordinatorLog();
-    $("coBody").innerHTML = list.length ? list.map(function (c) {
-      return "<tr><td>" + esc(c.name) + "</td><td>" + esc(c.club) + "</td><td>" + esc(c.time) + "</td></tr>";
-    }).join("") : empty(3, "No coordinator has logged in yet.");
-  }
-
   function render() {
-    renderOverview(); renderStudents(); renderRegs(); renderCoords();
+    renderOverview(); renderStudents(); renderRegs();
   }
 
   /* events */
   $("stuSearch").oninput = renderStudents;
   ["regSearch", "regClub", "regType"].forEach(function (id) { $(id).oninput = renderRegs; $(id).onchange = renderRegs; });
 
-  $("stuBody").onclick = function (e) {
-    var r = e.target.getAttribute("data-del");
-    if (r && confirm("Delete student " + r + " and their registrations?")) { S.deleteUser(r); render(); }
-  };
   $("stuCsv").onclick = function () {
     S.downloadCSV("students.csv", ["Name", "Roll", "Mobile", "Year", "Group", "Joined"],
-      S.allUsers().map(function (u) { return [u.name, u.roll, u.mobile, u.year, u.group, (u.createdAt || "").slice(0, 10)]; }));
+      users.map(function (u) { return [u.name, u.roll, u.mobile, u.year, u.group, (u.createdAt || "").slice(0, 10)]; }));
   };
   $("regCsv").onclick = function () {
     S.downloadCSV("registrations.csv", ["Student", "Roll", "Mobile", "Year", "Group", "Type", "Title", "Club", "Date"],
@@ -169,7 +160,16 @@
   };
 
   var start = (location.hash || "#overview").slice(1);
-  openTab(["overview", "students", "registrations", "coordinators"].indexOf(start) >= 0 ? start : "overview");
+  S.requireRole("admin").then(function (staff) {
+    if (!staff) return;
+    $("logout").textContent = "Logout";
+    Promise.all([S.allUsers(), S.allRegistrations()]).then(function (data) {
+      users = data[0];
+      registrations = data[1];
+      showError(null);
+      openTab(["overview", "students", "registrations", "staff"].indexOf(start) >= 0 ? start : "overview");
+    }).catch(showError);
+  }).catch(showError);
 })();
 </script>
 </body>

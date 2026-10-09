@@ -14,7 +14,7 @@ a{color:inherit;text-decoration:none}
 .tab.active{background:#fff;color:var(--blue);box-shadow:0 2px 8px rgba(15,40,80,.12)}
 .field label{display:block;font-weight:700;font-size:14px;margin-bottom:8px}
 .token-box{position:relative}
-.token-box input{width:100%;height:54px;padding:0 52px 0 16px;border:1px solid #d3dbe5;border-radius:12px;font-size:16px;letter-spacing:1px;font-family:Consolas,monospace;outline:0}
+.token-box input{width:100%;height:54px;padding:0 16px;border:1px solid #d3dbe5;border-radius:12px;font-size:16px;letter-spacing:0;font-family:inherit;outline:0}
 .token-box input:focus{border-color:var(--blue);box-shadow:0 0 0 3px rgba(31,111,235,.12)}
 .token-box .eye{position:absolute;right:14px;top:14px;cursor:pointer;font-size:20px;user-select:none}
 .hint{font-size:12.5px;color:var(--muted);margin:8px 0 18px}

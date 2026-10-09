@@ -31,12 +31,29 @@ Accounts previously saved only in a browser are not migrated; students must
 register again on the hosted demo.
 Contact/feedback reports are still stored only in the visitor's browser.
 
-STAFF / ADMIN PAGES
-Staff login and dashboards are disabled for the public demo. The previous
-client-side token was not secure and has been removed. Do not re-enable staff
-access until it uses server-side role checks and database policies.
+STAFF / ADMIN ACCESS
+Staff sign in at mainpart/staff-login.html with individual Supabase Auth
+accounts. Create each account in Supabase Authentication > Users; staff users
+do not need student profile metadata. Then grant access in the Supabase SQL
+Editor by inserting their Auth user ID into public.staff_members:
+
+    insert into public.staff_members (user_id, role, club)
+    values ('AUTH-USER-UUID', 'ADMIN', null);
+
+For a coordinator, use role 'COORDINATOR' and set club to exactly one of:
+i-Tech Hub, Stage & Spotlight, Social Impact, Art & Expression,
+Voice & Vision, Nature Warrior, or Frame & Focus. Only an administrator
+should run these SQL statements. Never put staff passwords or secret keys in
+the site or repository.
+
+Run the updated supabase/setup.sql in the SQL Editor before creating staff
+accounts. Database row-level security grants admins access to all student
+profiles and registrations; coordinators can read only students and
+registrations for their assigned club. Student profile deletion is not
+available from the demo dashboard.
 
 SECURITY
-Supabase row-level security lets each student read their own profile and
-registrations only. The publishable key is public by design; database policies
-are the security boundary. Do not use this demo for sensitive production data.
+Supabase row-level security is the security boundary: students read their own
+profile and registrations, admins can read all records, and coordinators can
+read records for their assigned club only. The publishable key is public by
+design. Do not use this demo for sensitive production data.

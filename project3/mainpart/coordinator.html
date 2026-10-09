@@ -18,6 +18,7 @@
 <main class="main">
   <h2 class="title" id="title">My Club</h2>
   <p class="lead">Students who joined your club or registered for your club's competitions.</p>
+  <p class="msg error" id="dashboardError" role="alert"></p>
   <div class="stats" id="stats"></div>
 
   <div class="toolbar">
@@ -31,21 +32,21 @@
   </table></div>
 </main>
 
-<script src="staff-config.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="supabase-config.js"></script>
 <script src="staff.js"></script>
 <script>
 (function () {
   var S = IdealStaff, esc = S.esc;
-  var me = S.requireRole("coordinator");
-  if (!me) return;
   function $(id) { return document.getElementById(id); }
+  var me, registrations = [];
 
-  $("clubName").textContent = me.club.toUpperCase();
-  $("title").textContent = me.club;
-  $("who").textContent = "👤 " + me.name;
-  $("logout").onclick = function () { S.logout(); location.href = "staff-login.html?role=coordinator"; };
+  function showError(error) {
+    $("dashboardError").textContent = error ? "Could not load club registrations: " + error.message : "";
+    $("dashboardError").className = error ? "msg error" : "msg";
+  }
 
-  function mine() { return S.allRegistrations().filter(function (r) { return r.club === me.club; }); }
+  function mine() { return registrations.filter(function (r) { return r.club === me.club; }); }
   function filtered() {
     var q = $("search").value.toLowerCase(), t = $("type").value;
     return mine().filter(function (r) {
@@ -71,9 +72,23 @@
       ["Student", "Roll", "Mobile", "Year", "Group", "Type", "Event", "Date"],
       filtered().map(function (r) { return [r.name, r.roll, r.mobile, r.year, r.group, r.type, r.title, r.date]; }));
   };
-  render();
-  // token revoked while page is open => kick out
-  setInterval(function () { if (!S.session()) location.replace("staff-login.html?role=coordinator"); }, 5000);
+
+  S.requireRole("coordinator").then(function (staff) {
+    if (!staff) return;
+    me = staff;
+    $("clubName").textContent = me.club.toUpperCase();
+    $("title").textContent = me.club;
+    $("who").textContent = "👤 " + me.name;
+    $("logout").onclick = function () {
+      S.logout().then(function () { location.replace("staff-login.html"); })
+        .catch(showError);
+    };
+    return S.allRegistrations().then(function (rows) {
+      registrations = rows;
+      showError(null);
+      render();
+    });
+  }).catch(showError);
 })();
 </script>
 </body>

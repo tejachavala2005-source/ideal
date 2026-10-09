@@ -1,57 +1,5 @@
-/* =====================================================
-   IDEAL COLLEGE CLUBS - STAFF (ADMIN / COORDINATOR) AUTH
-
-   Staff access is disabled for the public demo.
-
-   FRONT-END DEMO: for real security move this to a server.
-===================================================== */
-
 (function () {
     "use strict";
-
-
-    /* =====================================================
-       CONFIGURATION
-    ===================================================== */
-
-    var CFG = window.IDEAL_CONFIG || {};
-
-    var STAFF_TOKEN =
-        String(
-            CFG.STAFF_TOKEN ||
-            CFG.ADMIN_TOKEN ||
-            ""
-        )
-        .trim()
-        .toUpperCase();
-
-    var STAFF_HASH =
-        STAFF_TOKEN.length >= 8
-            ? sha256("ideal-token|" + STAFF_TOKEN)
-            : "";
-
-
-    /* =====================================================
-       STORAGE KEYS
-    ===================================================== */
-
-    var COORD_LOG_KEY = "ic_coord_log";
-
-    var STAFF_SESSION = "ic_staff_session";
-
-    var ATTEMPT_KEY = "ic_staff_attempts";
-
-    var USERS_KEY = "ic_users";
-
-    var REGS_KEY = "ic_registrations";
-
-    /* Student session key */
-    var STUDENT_SESSION = "ic_session";
-
-
-    /* =====================================================
-       CLUBS
-    ===================================================== */
 
     var CLUBS = [
         "i-Tech Hub",
@@ -63,995 +11,210 @@
         "Frame & Focus"
     ];
 
-
-    /* =====================================================
-       PURE JAVASCRIPT SHA-256
-    ===================================================== */
-
-    function sha256(str) {
-
-        str = unescape(encodeURIComponent(str));
-
-        var K = [],
-            H = [],
-            i,
-            j;
-
-        var isPrime = {},
-            cand = 2,
-            count = 0;
-
-        function frac(x) {
-            return ((x - Math.floor(x)) * 4294967296) | 0;
+    function client() {
+        if (!window.IdealCloud) {
+            throw new Error("Supabase is not configured. Check the Supabase setup instructions.");
         }
+        return window.IdealCloud;
+    }
 
-        while (count < 64) {
+    function esc(value) {
+        return String(value == null ? "" : value).replace(/[&<>"']/g, function (character) {
+            return {
+                "&": "&amp;",
+                "<": "&lt;",
+                ">": "&gt;",
+                '"': "&quot;",
+                "'": "&#39;"
+            }[character];
+        });
+    }
 
-            if (!isPrime[cand]) {
-
-                for (
-                    i = cand * cand;
-                    i < 313;
-                    i += cand
-                ) {
-                    isPrime[i] = 1;
+    function staffMemberForUser(supabase, user) {
+        return supabase.from("staff_members")
+            .select("user_id,role,club")
+            .eq("user_id", user.id)
+            .maybeSingle()
+            .then(function (result) {
+                if (result.error) {
+                    throw result.error;
+                }
+                if (!result.data) {
+                    return null;
                 }
 
-                if (count < 8) {
-                    H[count] =
-                        frac(Math.pow(cand, 0.5));
+                var role = result.data.role.toLowerCase();
+                if (role !== "admin" && role !== "coordinator") {
+                    throw new Error("This account has an invalid staff role.");
                 }
-
-                K[count++] =
-                    frac(Math.pow(cand, 1 / 3));
-            }
-
-            cand++;
-        }
-
-
-        var bytes = [];
-
-        for (i = 0; i < str.length; i++) {
-            bytes.push(str.charCodeAt(i));
-        }
-
-
-        var bitLen = bytes.length * 8;
-
-        bytes.push(0x80);
-
-        while (bytes.length % 64 !== 56) {
-            bytes.push(0);
-        }
-
-
-        var hi =
-            Math.floor(bitLen / 4294967296);
-
-        var lo = bitLen >>> 0;
-
-
-        bytes.push(
-            (hi >>> 24) & 255,
-            (hi >>> 16) & 255,
-            (hi >>> 8) & 255,
-            hi & 255,
-
-            (lo >>> 24) & 255,
-            (lo >>> 16) & 255,
-            (lo >>> 8) & 255,
-            lo & 255
-        );
-
-
-        function rr(v, n) {
-            return (
-                (v >>> n) |
-                (v << (32 - n))
-            );
-        }
-
-
-        for (
-            var off = 0;
-            off < bytes.length;
-            off += 64
-        ) {
-
-            var w = [];
-
-
-            for (i = 0; i < 16; i++) {
-
-                w[i] =
-                    (bytes[off + i * 4] << 24) |
-                    (bytes[off + i * 4 + 1] << 16) |
-                    (bytes[off + i * 4 + 2] << 8) |
-                    bytes[off + i * 4 + 3];
-
-            }
-
-
-            for (i = 16; i < 64; i++) {
-
-                var s0 =
-                    rr(w[i - 15], 7) ^
-                    rr(w[i - 15], 18) ^
-                    (w[i - 15] >>> 3);
-
-                var s1 =
-                    rr(w[i - 2], 17) ^
-                    rr(w[i - 2], 19) ^
-                    (w[i - 2] >>> 10);
-
-                w[i] =
-                    (w[i - 16] +
-                        s0 +
-                        w[i - 7] +
-                        s1) |
-                    0;
-            }
-
-
-            var a = H[0],
-                b = H[1],
-                c = H[2],
-                d = H[3],
-                e = H[4],
-                f = H[5],
-                g = H[6],
-                h = H[7];
-
-
-            for (i = 0; i < 64; i++) {
-
-                var S1 =
-                    rr(e, 6) ^
-                    rr(e, 11) ^
-                    rr(e, 25);
-
-                var ch =
-                    (e & f) ^
-                    (~e & g);
-
-                var t1 =
-                    (h +
-                        S1 +
-                        ch +
-                        K[i] +
-                        w[i]) |
-                    0;
-
-                var S0 =
-                    rr(a, 2) ^
-                    rr(a, 13) ^
-                    rr(a, 22);
-
-                var mj =
-                    (a & b) ^
-                    (a & c) ^
-                    (b & c);
-
-                var t2 =
-                    (S0 + mj) |
-                    0;
-
-
-                h = g;
-                g = f;
-                f = e;
-                e = (d + t1) | 0;
-                d = c;
-                c = b;
-                b = a;
-                a = (t1 + t2) | 0;
-            }
-
-
-            H[0] = (H[0] + a) | 0;
-            H[1] = (H[1] + b) | 0;
-            H[2] = (H[2] + c) | 0;
-            H[3] = (H[3] + d) | 0;
-
-            H[4] = (H[4] + e) | 0;
-            H[5] = (H[5] + f) | 0;
-            H[6] = (H[6] + g) | 0;
-            H[7] = (H[7] + h) | 0;
-        }
-
-
-        var out = "";
-
-        for (i = 0; i < 8; i++) {
-
-            out +=
-                ("00000000" +
-                    (H[i] >>> 0).toString(16))
-                    .slice(-8);
-        }
-
-        return out;
-    }
-
-
-    /* =====================================================
-       TOKEN HELPERS
-    ===================================================== */
-
-    function normToken(t) {
-
-        return String(t || "")
-            .trim()
-            .toUpperCase();
-    }
-
-
-    function tokenHash(t) {
-
-        return sha256(
-            "ideal-token|" +
-            normToken(t)
-        );
-    }
-
-
-    /* =====================================================
-       RANDOM TOKEN GENERATOR
-    ===================================================== */
-
-    function randomToken(prefix, groups) {
-
-        var alpha =
-            "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
-
-        var parts = [];
-
-        var buf =
-            new Uint8Array(groups * 5);
-
-
-        if (
-            window.crypto &&
-            crypto.getRandomValues
-        ) {
-
-            crypto.getRandomValues(buf);
-
-        } else {
-
-            for (
-                var k = 0;
-                k < buf.length;
-                k++
-            ) {
-
-                buf[k] =
-                    Math.floor(
-                        Math.random() * 256
-                    );
-            }
-        }
-
-
-        for (
-            var g = 0;
-            g < groups;
-            g++
-        ) {
-
-            var s = "";
-
-            for (
-                var n = 0;
-                n < 5;
-                n++
-            ) {
-
-                s += alpha.charAt(
-                    buf[g * 5 + n] %
-                    alpha.length
-                );
-
-            }
-
-            parts.push(s);
-        }
-
-
-        return prefix +
-            "-" +
-            parts.join("-");
-    }
-
-
-    /* =====================================================
-       STORAGE
-    ===================================================== */
-
-    function read(store, key, fb) {
-
-        try {
-
-            var v =
-                store.getItem(key);
-
-            return v
-                ? JSON.parse(v)
-                : fb;
-
-        } catch (e) {
-
-            return fb;
-        }
-    }
-
-
-    function write(store, key, val) {
-
-        try {
-
-            store.setItem(
-                key,
-                JSON.stringify(val)
-            );
-
-            return true;
-
-        } catch (e) {
-
-            return false;
-        }
-    }
-
-
-    /* =====================================================
-       HTML ESCAPE
-    ===================================================== */
-
-    function esc(s) {
-
-        return String(
-            s == null ? "" : s
-        ).replace(
-            /[&<>"']/g,
-            function (c) {
+                if (role === "coordinator" && CLUBS.indexOf(result.data.club) < 0) {
+                    throw new Error("This coordinator account has no valid club assignment.");
+                }
 
                 return {
-                    "&": "&amp;",
-                    "<": "&lt;",
-                    ">": "&gt;",
-                    '"': "&quot;",
-                    "'": "&#39;"
-                }[c];
-
-            }
-        );
+                    id: user.id,
+                    email: user.email,
+                    name: (user.user_metadata && user.user_metadata.full_name) || user.email,
+                    role: role,
+                    club: result.data.club
+                };
+            });
     }
 
+    function currentStaff() {
+        var supabase = client();
+        return supabase.auth.getUser().then(function (result) {
+            if (result.error) {
+                throw result.error;
+            }
+            if (!result.data.user) {
+                return null;
+            }
+            return staffMemberForUser(supabase, result.data.user);
+        });
+    }
 
-    /* =====================================================
-       BRUTE FORCE PROTECTION
-    ===================================================== */
-
-    function lockInfo() {
-
-        var a =
-            read(
-                localStorage,
-                ATTEMPT_KEY,
-                {
-                    count: 0,
-                    until: 0
-                }
-            );
-
-
-        var left =
-            Math.ceil(
-                (a.until - Date.now()) /
-                1000
-            );
-
-
+    function mapRegistration(row) {
+        var student = row.student || {};
         return {
-            attempts: a,
-            left: left > 0 ? left : 0
+            id: row.id,
+            name: student.full_name || "",
+            roll: student.roll_number || "",
+            mobile: student.mobile || "",
+            year: student.year || "",
+            group: student.group_name || "",
+            type: row.type,
+            title: row.title,
+            club: row.club,
+            date: new Date(row.created_at).toLocaleDateString()
         };
     }
 
-
-    function failAttempt() {
-
-        var a =
-            lockInfo().attempts;
-
-
-        if (
-            a.until &&
-            a.until < Date.now()
-        ) {
-
-            a = {
-                count: 0,
-                until: 0
-            };
-        }
-
-
-        a.count++;
-
-
-        if (a.count >= 5) {
-
-            a.until =
-                Date.now() + 60000;
-
-            a.count = 0;
-        }
-
-
-        write(
-            localStorage,
-            ATTEMPT_KEY,
-            a
-        );
-    }
-
-
-    function clearAttempts() {
-
-        localStorage.removeItem(
-            ATTEMPT_KEY
-        );
-    }
-
-
-    function checkLock() {
-
-        var l = lockInfo();
-
-
-        if (l.left > 0) {
-
-            throw new Error(
-                "Too many wrong tokens. Try again in " +
-                l.left +
-                " seconds."
-            );
-        }
-    }
-
-
-    /* =====================================================
-       SESSION
-    ===================================================== */
-
-    function setSession(s) {
-
-        write(
-            sessionStorage,
-            STAFF_SESSION,
-            s
-        );
-    }
-
-
-    /* =====================================================
-       STAFF AUTH OBJECT
-    ===================================================== */
-
     var Staff = {
-
         CLUBS: CLUBS,
-
         esc: esc,
 
-        tokenHash: tokenHash,
+        login: function (email, password) {
+            var supabase = client();
+            window.IdealRememberSession = false;
 
+            return supabase.auth.signInWithPassword({
+                email: String(email || "").trim(),
+                password: password
+            }).then(function (result) {
+                if (result.error) {
+                    throw result.error;
+                }
 
-        /* -------------------------------------------------
-           GET CURRENT STAFF SESSION
-        ------------------------------------------------- */
+                return staffMemberForUser(supabase, result.data.user).then(
+                    function (staff) {
+                        if (!staff) {
+                            return supabase.auth.signOut().then(function (signOutResult) {
+                                if (signOutResult.error) {
+                                    throw new Error("This account has not been granted staff access. Sign-out also failed: " + signOutResult.error.message);
+                                }
+                                throw new Error("This account has not been granted staff access.");
+                            });
+                        }
 
-        session: function () {
-
-            var s =
-                read(
-                    sessionStorage,
-                    STAFF_SESSION,
-                    null
-                );
-
-
-            if (
-                !s ||
-                !STAFF_HASH ||
-                s.hash !== STAFF_HASH
-            ) {
-
-                return null;
-            }
-
-
-            if (
-                s.role !== "admin" &&
-                s.role !== "coordinator"
-            ) {
-
-                return null;
-            }
-
-
-            return s;
-        },
-
-
-        /* -------------------------------------------------
-           ADMIN LOGIN
-        ------------------------------------------------- */
-
-        adminLogin: function (token) {
-
-            checkLock();
-
-
-            var h =
-                tokenHash(token);
-
-
-            if (
-                !STAFF_HASH ||
-                h !== STAFF_HASH
-            ) {
-
-                failAttempt();
-
-                throw new Error(
-                    "Invalid staff token."
-                );
-            }
-
-
-            clearAttempts();
-
-
-            /*
-             * IMPORTANT:
-             * A successful staff login starts
-             * a completely separate staff module.
-             *
-             * Remove any old student session here.
-             * This does NOT bypass the confirmation
-             * because this code runs only after the
-             * user has already reached Staff Login.
-             */
-
-            localStorage.removeItem(
-                STUDENT_SESSION
-            );
-
-            sessionStorage.removeItem(
-                STUDENT_SESSION
-            );
-
-
-            var s = {
-                role: "admin",
-                name: "Administrator",
-                hash: h
-            };
-
-
-            setSession(s);
-
-
-            return s;
-        },
-
-
-        /* -------------------------------------------------
-           COORDINATOR LOGIN
-        ------------------------------------------------- */
-
-        coordinatorLogin: function (
-            token,
-            name,
-            club
-        ) {
-
-            checkLock();
-
-
-            name =
-                String(name || "")
-                    .trim();
-
-
-            if (name.length < 2) {
-
-                throw new Error(
-                    "Enter your name."
-                );
-            }
-
-
-            if (
-                CLUBS.indexOf(club) < 0
-            ) {
-
-                throw new Error(
-                    "Select your club."
-                );
-            }
-
-
-            var h =
-                tokenHash(token);
-
-
-            if (
-                !STAFF_HASH ||
-                h !== STAFF_HASH
-            ) {
-
-                failAttempt();
-
-                throw new Error(
-                    "Invalid staff token."
-                );
-            }
-
-
-            clearAttempts();
-
-
-            /*
-             * Remove old student session only
-             * after successful staff authentication.
-             */
-
-            localStorage.removeItem(
-                STUDENT_SESSION
-            );
-
-            sessionStorage.removeItem(
-                STUDENT_SESSION
-            );
-
-
-            /* Coordinator login history */
-
-            var log =
-                read(
-                    localStorage,
-                    COORD_LOG_KEY,
-                    []
-                );
-
-
-            log.unshift({
-                name: name,
-                club: club,
-                time: new Date().toLocaleString()
+                        sessionStorage.removeItem("ic_session");
+                        localStorage.removeItem("ic_session");
+                        return staff;
+                    },
+                    function (error) {
+                        return supabase.auth.signOut().then(function (signOutResult) {
+                            if (signOutResult.error) {
+                                throw new Error(error.message + " Sign-out cleanup also failed: " + signOutResult.error.message);
+                            }
+                            throw error;
+                        });
+                    });
             });
-
-
-            write(
-                localStorage,
-                COORD_LOG_KEY,
-                log.slice(0, 100)
-            );
-
-
-            var s = {
-                role: "coordinator",
-                name: name,
-                club: club,
-                hash: h
-            };
-
-
-            setSession(s);
-
-
-            return s;
         },
 
-
-        /* -------------------------------------------------
-           STAFF LOGOUT
-        ------------------------------------------------- */
-
-        logout: function () {
-
-            sessionStorage.removeItem(
-                STAFF_SESSION
-            );
-        },
-
-
-        /* -------------------------------------------------
-           REQUIRE ROLE
-        ------------------------------------------------- */
+        currentStaff: currentStaff,
 
         requireRole: function (role) {
-
-            var s =
-                Staff.session();
-
-
-            if (
-                !s ||
-                s.role !== role
-            ) {
-
-                Staff.logout();
-
-
-                window.location.replace(
-                    "staff-login.html?role=" +
-                    encodeURIComponent(role)
-                );
-
-
-                return null;
-            }
-
-
-            return s;
+            return currentStaff().then(function (staff) {
+                if (!staff) {
+                    window.location.replace("staff-login.html");
+                    return null;
+                }
+                if (staff.role !== role) {
+                    window.location.replace(staff.role === "admin" ? "admin.html" : "coordinator.html");
+                    return null;
+                }
+                return staff;
+            });
         },
 
-
-        /* -------------------------------------------------
-           COORDINATOR LOGIN HISTORY
-        ------------------------------------------------- */
-
-        coordinatorLog: function () {
-
-            return read(
-                localStorage,
-                COORD_LOG_KEY,
-                []
-            );
+        logout: function () {
+            sessionStorage.removeItem("ic_session");
+            localStorage.removeItem("ic_session");
+            return client().auth.signOut().then(function (result) {
+                if (result.error) {
+                    throw result.error;
+                }
+            });
         },
-
-
-        /* -------------------------------------------------
-           GET ALL STUDENTS
-        ------------------------------------------------- */
 
         allUsers: function () {
-
-            var u =
-                read(
-                    localStorage,
-                    USERS_KEY,
-                    {}
-                );
-
-
-            return Object.keys(u)
-                .map(function (k) {
-
-                    return u[k];
-
+            return client().from("profiles")
+                .select("id,roll_number,full_name,mobile,year,group_name,created_at")
+                .order("created_at", { ascending: false })
+                .then(function (result) {
+                    if (result.error) {
+                        throw result.error;
+                    }
+                    return result.data.map(function (row) {
+                        return {
+                            id: row.id,
+                            name: row.full_name,
+                            roll: row.roll_number,
+                            mobile: row.mobile,
+                            year: row.year,
+                            group: row.group_name,
+                            createdAt: row.created_at
+                        };
+                    });
                 });
         },
-
-
-        /* -------------------------------------------------
-           DELETE STUDENT
-        ------------------------------------------------- */
-
-        deleteUser: function (roll) {
-
-            var u =
-                read(
-                    localStorage,
-                    USERS_KEY,
-                    {}
-                );
-
-
-            delete u[roll];
-
-
-            write(
-                localStorage,
-                USERS_KEY,
-                u
-            );
-
-
-            var r =
-                read(
-                    localStorage,
-                    REGS_KEY,
-                    {}
-                );
-
-
-            delete r[roll];
-
-
-            write(
-                localStorage,
-                REGS_KEY,
-                r
-            );
-        },
-
-
-        /* -------------------------------------------------
-           ALL REGISTRATIONS
-        ------------------------------------------------- */
 
         allRegistrations: function () {
-
-            var regs =
-                read(
-                    localStorage,
-                    REGS_KEY,
-                    {}
-                );
-
-
-            var users =
-                read(
-                    localStorage,
-                    USERS_KEY,
-                    {}
-                );
-
-
-            var rows = [];
-
-
-            Object.keys(regs)
-                .forEach(function (roll) {
-
-                    var u =
-                        users[roll] || {};
-
-
-                    regs[roll]
-                        .forEach(function (r) {
-
-                            rows.push({
-
-                                roll: roll,
-
-                                name:
-                                    u.name ||
-                                    "(deleted)",
-
-                                mobile:
-                                    u.mobile || "",
-
-                                year:
-                                    u.year || "",
-
-                                group:
-                                    u.group || "",
-
-                                type:
-                                    r.type,
-
-                                title:
-                                    r.title,
-
-                                club:
-                                    r.club || "",
-
-                                date:
-                                    r.date
-                            });
-
-                        });
-
+            return client().from("registrations")
+                .select("id,type,title,club,created_at,student:profiles!registrations_student_id_fkey(full_name,roll_number,mobile,year,group_name)")
+                .order("created_at", { ascending: false })
+                .then(function (result) {
+                    if (result.error) {
+                        throw result.error;
+                    }
+                    return result.data.map(mapRegistration);
                 });
-
-
-            return rows;
         },
 
-
-        /* -------------------------------------------------
-           DOWNLOAD CSV
-        ------------------------------------------------- */
-
-        downloadCSV: function (
-            filename,
-            headers,
-            rows
-        ) {
-
-            function cell(v) {
-
-                v =
-                    String(
-                        v == null
-                            ? ""
-                            : v
-                    );
-
-
-                return /[",\n]/.test(v)
-
-                    ? '"' +
-                      v.replace(
-                          /"/g,
-                          '""'
-                      ) +
-                      '"'
-
-                    : v;
+        downloadCSV: function (filename, headers, rows) {
+            function cell(value) {
+                var text = String(value == null ? "" : value);
+                return /[",\n]/.test(text) ? '"' + text.replace(/"/g, '""') + '"' : text;
             }
 
-
-            var out =
-                [headers.join(",")]
-                .concat(
-                    rows.map(function (r) {
-
-                        return r
-                            .map(cell)
-                            .join(",");
-
-                    })
-                )
+            var output = [headers.map(cell).join(",")]
+                .concat(rows.map(function (row) {
+                    return row.map(cell).join(",");
+                }))
                 .join("\n");
-
-
-            var blob =
-                new Blob(
-                    [
-                        "\uFEFF" + out
-                    ],
-                    {
-                        type:
-                            "text/csv;charset=utf-8"
-                    }
-                );
-
-
-            var a =
-                document.createElement("a");
-
-
-            a.href =
-                URL.createObjectURL(blob);
-
-            a.download =
-                filename;
-
-
-            document.body.appendChild(a);
-
-            a.click();
-
-            a.remove();
-
-
-            setTimeout(
-                function () {
-
-                    URL.revokeObjectURL(
-                        a.href
-                    );
-
-                },
-                1000
-            );
+            var blob = new Blob(["\uFEFF" + output], { type: "text/csv;charset=utf-8" });
+            var link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            link.remove();
+            setTimeout(function () {
+                URL.revokeObjectURL(link.href);
+            }, 1000);
         }
     };
 
-
-    /* =====================================================
-       GLOBAL STAFF AUTH
-    ===================================================== */
-
     window.IdealStaff = Staff;
-
 })();
