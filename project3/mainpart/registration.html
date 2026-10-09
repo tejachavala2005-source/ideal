@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Student Registration</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background: #f5f8f6;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 30px;
+        }
+
+        .registration-container {
+            width: 100%;
+            max-width: 900px;
+            background: #ffffff;
+            padding: 45px 55px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.08);
+        }
+
+        .title {
+            text-align: center;
+            margin-bottom: 35px;
+        }
+
+        .title h1 {
+            color: #006b43;
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .title p {
+            color: #777;
+            font-size: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 23px;
+        }
+
+        label {
+            display: block;
+            font-size: 18px;
+            font-weight: 600;
+            color: #101828;
+            margin-bottom: 10px;
+        }
+
+        .required {
+            color: #d62828;
+        }
+
+        input,
+        select {
+            width: 100%;
+            height: 62px;
+            padding: 0 20px;
+            border: 1px solid #d9dfe3;
+            border-radius: 12px;
+            outline: none;
+            background: #ffffff;
+            font-size: 17px;
+            color: #333;
+            transition: 0.3s;
+        }
+
+        input::placeholder {
+            color: #8a9299;
+        }
+
+        input:focus,
+        select:focus {
+            border-color: #006b43;
+            box-shadow: 0 0 0 3px rgba(0, 107, 67, 0.10);
+        }
+
+        input.error-input,
+        select.error-input {
+            border-color: #d62828;
+        }
+
+        input.success-input,
+        select.success-input {
+            border-color: #006b43;
+        }
+
+        select {
+            cursor: pointer;
+        }
+
+        .error-message {
+            color: #d62828;
+            font-size: 13px;
+            margin-top: 6px;
+            display: none;
+        }
+
+        .success-message {
+            display: none;
+            background: #e8f7ef;
+            color: #006b43;
+            padding: 15px;
+            border-radius: 10px;
+            text-align: center;
+            font-weight: bold;
+            margin-bottom: 20px;
+        }
+
+        .submit-btn {
+            width: 100%;
+            height: 65px;
+            margin-top: 8px;
+            border: none;
+            border-radius: 12px;
+            background: #006b43;
+            color: white;
+            font-size: 20px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .submit-btn:hover {
+            background: #005537;
+        }
+
+        .submit-btn:active {
+            transform: scale(0.99);
+        }
+
+        .arrow {
+            font-size: 28px;
+            margin-left: 10px;
+            vertical-align: -2px;
+        }
+
+        .back-home { display:inline-block; margin-bottom:14px; color:#006b43; font-weight:600; font-size:14px; text-decoration:none; }
+        .back-home:hover { text-decoration:underline; }
+        .login-link { text-align:center; margin-top:22px; color:#666; font-size:15px; }
+        .login-link a { color:#006b43; font-weight:bold; text-decoration:none; }
+        .error-message.show-error { display:block; }
+
+        /* Mobile Responsive */
+
+        @media (max-width: 600px) {
+
+            body {
+                padding: 15px;
+            }
+
+            .registration-container {
+                padding: 30px 20px;
+                border-radius: 15px;
+            }
+
+            .title h1 {
+                font-size: 25px;
+            }
+
+            .title p {
+                font-size: 14px;
+            }
+
+            label {
+                font-size: 16px;
+            }
+
+            input,
+            select {
+                height: 55px;
+                font-size: 15px;
+            }
+
+            .submit-btn {
+                height: 58px;
+                font-size: 17px;
+            }
+        }
+    </style>
+</head>
+
+
+<body>
+
+    <div class="registration-container">
+
+        <a href="main.html" class="back-home">← Back to Home</a>
+
+        <!-- Heading -->
+
+        <div class="title">
+
+            <h1>Student Registration</h1>
+
+            <p>
+                Please enter your details to complete registration
+            </p>
+
+        </div>
+
+
+        <!-- Success Message -->
+
+        <div
+            class="success-message"
+            id="successMessage"
+        >
+            Registration Successful! 🎉
+        </div>
+
+
+        <!-- Registration Form -->
+
+        <form id="registrationForm">
+
+
+            <!-- Student Name -->
+
+            <div class="form-group">
+
+                <label>
+                    Student Name
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    id="studentName"
+                    name="student_name"
+                    placeholder="Enter your full name"
+                    autocomplete="name"
+                >
+
+                <div
+                    class="error-message"
+                    id="nameError"
+                >
+                    Please enter your full name.
+                </div>
+
+            </div>
+
+
+            <!-- Roll Number -->
+
+            <div class="form-group">
+
+                <label>
+                    Roll Number
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    id="rollNumber"
+                    name="roll_number"
+                    placeholder="Enter your roll number"
+                    autocomplete="off"
+                >
+
+                <div
+                    class="error-message"
+                    id="rollError"
+                >
+                    Please enter your roll number.
+                </div>
+
+            </div>
+
+
+            <!-- Mobile Number -->
+
+            <div class="form-group">
+
+                <label>
+                    Mobile Number
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="tel"
+                    id="mobileNumber"
+                    name="mobile"
+                    placeholder="Enter your mobile number"
+                    maxlength="10"
+                    inputmode="numeric"
+                    autocomplete="tel"
+                >
+
+                <div
+                    class="error-message"
+                    id="mobileError"
+                >
+                    Please enter a valid 10-digit mobile number.
+                </div>
+
+            </div>
+
+
+            <!-- Password -->
+
+            <div class="form-group">
+
+                <label>
+                    Password
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="password"
+                    id="password"
+                    name="password"
+                    placeholder="Create your password"
+                    autocomplete="new-password"
+                >
+
+                <div
+                    class="error-message"
+                    id="passwordError"
+                >
+                    Password must contain at least 6 characters.
+                </div>
+
+            </div>
+
+
+            <!-- Confirm Password -->
+
+            <div class="form-group">
+
+                <label>
+                    Confirm Password
+                    <span class="required">*</span>
+                </label>
+
+                <input
+                    type="password"
+                    id="confirmPassword"
+                    name="confirm_password"
+                    placeholder="Confirm your password"
+                    autocomplete="new-password"
+                >
+
+                <div
+                    class="error-message"
+                    id="confirmPasswordError"
+                >
+                    Passwords do not match.
+                </div>
+
+            </div>
+
+
+            <!-- Year of Studying -->
+
+            <div class="form-group">
+
+                <label>
+                    Year of Studying
+                    <span class="required">*</span>
+                </label>
+
+                <select
+                    id="year"
+                    name="year"
+                >
+
+                    <option value="">
+                        -- Select Year --
+                    </option>
+
+                    <option value="1st Year">
+                        1st Year
+                    </option>
+
+                    <option value="2nd Year">
+                        2nd Year
+                    </option>
+
+                    <option value="3rd Year">
+                        3rd Year
+                    </option>
+
+                    <option value="4th Year">
+                        4th Year
+                    </option>
+
+                </select>
+
+                <div
+                    class="error-message"
+                    id="yearError"
+                >
+                    Please select your year of studying.
+                </div>
+
+            </div>
+
+
+            <!-- Group / Stream -->
+
+            <div class="form-group">
+
+                <label>
+                    Group / Stream
+                    <span class="required">*</span>
+                </label>
+
+                <select
+                    id="group"
+                    name="group"
+                >
+
+                    <option value="">
+                        -- Select Group / Stream --
+                    </option>
+
+
+                    <option value="Computer Science">
+                        Computer Science
+                    </option>
+
+                    <option value="Artificial Intelligence">
+                        Artificial Intelligence
+                    </option>
+
+                    <option value="BCA">
+                        BCA
+                    </option>
+
+                    <option value="B.Sc">
+                        B.Sc
+                    </option>
+
+                    <option value="B.Com">
+                        B.Com
+                    </option>
+
+                    <option value="Other">
+                        Other
+                    </option>
+
+                </select>
+
+                <div
+                    class="error-message"
+                    id="groupError"
+                >
+                    Please select your group / stream.
+                </div>
+
+            </div>
+
+
+            <!-- Submit Button -->
+
+            <button
+                type="submit"
+                class="submit-btn"
+            >
+                Submit Registration
+
+                <span class="arrow">
+                    →
+                </span>
+
+            </button>
+
+
+        </form>
+
+        <p class="login-link">
+            Already have an account?
+            <a href="logbtn.html">Login</a>
+        </p>
+
+    </div>
+
+
+    <!-- JavaScript -->
+    <script src="auth.js"></script>
+    <script>
+        var form = document.getElementById("registrationForm");
+        var successMessage = document.getElementById("successMessage");
+
+        function $(id) { return document.getElementById(id); }
+
+        function fail(inputId, errorId, text) {
+            if (text) $(errorId).textContent = text;
+            $(errorId).style.display = "block";
+            $(inputId).classList.add("error-input");
+            return false;
+        }
+        function pass(inputId) { $(inputId).classList.add("success-input"); }
+
+        // numbers only in mobile field
+        $("mobileNumber").addEventListener("input", function () {
+            this.value = this.value.replace(/[^0-9]/g, "");
+        });
+
+        form.addEventListener("submit", function (event) {
+            event.preventDefault();
+
+            var name = $("studentName").value.trim();
+            var roll = $("rollNumber").value.trim();
+            var mobile = $("mobileNumber").value.trim();
+            var password = $("password").value;
+            var confirmPassword = $("confirmPassword").value;
+            var year = $("year").value;
+            var group = $("group").value;
+
+            document.querySelectorAll(".error-message").forEach(function (e) { e.style.display = "none"; });
+            document.querySelectorAll("input, select").forEach(function (i) {
+                i.classList.remove("error-input", "success-input");
+            });
+            successMessage.style.display = "none";
+
+            var valid = true;
+
+            if (name.length < 2) valid = fail("studentName", "nameError"); else pass("studentName");
+            if (roll === "") valid = fail("rollNumber", "rollError"); else pass("rollNumber");
+            if (!/^[6-9][0-9]{9}$/.test(mobile)) valid = fail("mobileNumber", "mobileError"); else pass("mobileNumber");
+            if (password.length < 6) valid = fail("password", "passwordError"); else pass("password");
+            if (confirmPassword === "" || confirmPassword !== password) valid = fail("confirmPassword", "confirmPasswordError");
+            else pass("confirmPassword");
+            if (year === "") valid = fail("year", "yearError"); else pass("year");
+            if (group === "") valid = fail("group", "groupError"); else pass("group");
+
+            if (!valid) return;
+
+            IdealAuth.register({
+                name: name, roll: roll, mobile: mobile,
+                password: password, year: year, group: group
+            }).then(function () {
+                successMessage.textContent = "Registration Successful! Redirecting to login...";
+                successMessage.style.display = "block";
+                successMessage.scrollIntoView({ behavior: "smooth", block: "center" });
+                form.reset();
+                document.querySelectorAll("input, select").forEach(function (i) { i.classList.remove("success-input"); });
+                setTimeout(function () { location.href = "logbtn.html?registered=1"; }, 1500);
+            }).catch(function (err) {
+                fail("rollNumber", "rollError", err.message);
+            });
+        });
+    </script>
+
+</body>
+</html>

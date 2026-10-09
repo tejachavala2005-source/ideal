@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Coordinator Dashboard - Ideal College Clubs</title>
+<link rel="stylesheet" href="staff.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="main.html"><i>IC</i><span>COORDINATOR<small id="clubName">CLUBS PORTAL</small></span></a>
+  <nav></nav>
+  <span class="who" id="who"></span>
+  <a class="btn ghost sm" href="main.html" style="background:transparent;color:#fff;border-color:#5b7396">Website</a>
+  <button class="btn danger sm" id="logout">Logout</button>
+</header>
+
+<main class="main">
+  <h2 class="title" id="title">My Club</h2>
+  <p class="lead">Students who joined your club or registered for your club's competitions.</p>
+  <div class="stats" id="stats"></div>
+
+  <div class="toolbar">
+    <input id="search" placeholder="Search by student, roll number or event...">
+    <select id="type"><option value="">All types</option><option>Competition</option><option>Club Join</option></select>
+    <button class="btn sm" id="csv">⬇ Export CSV</button>
+  </div>
+  <div class="table-wrap"><table>
+    <thead><tr><th>Student</th><th>Roll No.</th><th>Mobile</th><th>Year</th><th>Group</th><th>Type</th><th>Event</th><th>Date</th></tr></thead>
+    <tbody id="body"></tbody>
+  </table></div>
+</main>
+
+<script src="staff-config.js"></script>
+<script src="staff.js"></script>
+<script>
+(function () {
+  var S = IdealStaff, esc = S.esc;
+  var me = S.requireRole("coordinator");
+  if (!me) return;
+  function $(id) { return document.getElementById(id); }
+
+  $("clubName").textContent = me.club.toUpperCase();
+  $("title").textContent = me.club;
+  $("who").textContent = "👤 " + me.name;
+  $("logout").onclick = function () { S.logout(); location.href = "staff-login.html?role=coordinator"; };
+
+  function mine() { return S.allRegistrations().filter(function (r) { return r.club === me.club; }); }
+  function filtered() {
+    var q = $("search").value.toLowerCase(), t = $("type").value;
+    return mine().filter(function (r) {
+      return (!t || r.type === t) && (!q || (r.name + " " + r.roll + " " + r.title).toLowerCase().indexOf(q) >= 0);
+    });
+  }
+  function render() {
+    var all = mine();
+    var students = {}; all.forEach(function (r) { students[r.roll] = 1; });
+    $("stats").innerHTML =
+      '<div class="stat"><b>' + Object.keys(students).length + "</b><span>Unique students</span></div>" +
+      '<div class="stat"><b>' + all.filter(function (r) { return r.type === "Club Join"; }).length + "</b><span>Club members joined</span></div>" +
+      '<div class="stat"><b>' + all.filter(function (r) { return r.type === "Competition"; }).length + "</b><span>Competition entries</span></div>";
+    var rows = filtered();
+    $("body").innerHTML = rows.length ? rows.map(function (r) {
+      return "<tr><td>" + esc(r.name) + "</td><td>" + esc(r.roll) + "</td><td>" + esc(r.mobile) + "</td><td>" + esc(r.year) +
+        "</td><td>" + esc(r.group) + '</td><td><span class="badge info">' + esc(r.type) + "</span></td><td>" + esc(r.title) + "</td><td>" + esc(r.date) + "</td></tr>";
+    }).join("") : '<tr><td colspan="8" class="empty">No registrations for your club yet.</td></tr>';
+  }
+  $("search").oninput = render; $("type").onchange = render;
+  $("csv").onclick = function () {
+    S.downloadCSV(me.club.replace(/[^a-z0-9]+/gi, "_") + "_registrations.csv",
+      ["Student", "Roll", "Mobile", "Year", "Group", "Type", "Event", "Date"],
+      filtered().map(function (r) { return [r.name, r.roll, r.mobile, r.year, r.group, r.type, r.title, r.date]; }));
+  };
+  render();
+  // token revoked while page is open => kick out
+  setInterval(function () { if (!S.session()) location.replace("staff-login.html?role=coordinator"); }, 5000);
+})();
+</script>
+</body>
+</html>

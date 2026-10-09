@@ -1,0 +1,804 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>Ideal College - Clubs & Competitions</title>
+
+    <link rel="stylesheet" href="main.css">
+    <link rel="stylesheet" href="auth.css">
+
+    <!-- Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Playfair+Display:wght@700;800&display=swap" rel="stylesheet">
+</head>
+
+<body>
+
+<!-- ================= NAVBAR ================= -->
+
+<header class="navbar">
+
+    <div class="container nav-container">
+
+        <a href="#home" class="logo">
+
+            <div class="logo-circle">
+                IC
+            </div>
+
+            <div class="logo-text">
+                <h2>IDEAL</h2>
+                <span>DEGREE & PG COLLEGE</span>
+                <small>LEARN • GROW • BELONG</small>
+            </div>
+
+        </a>
+
+
+        <nav class="navigation" id="navigation">
+
+            <a href="#home" class="active">Home</a>
+
+            <a href="#clubs">Clubs</a>
+
+            <a href="#competitions">Competitions</a>
+
+            <a href="#gallery">Gallery</a>
+
+            <a href="#about">About</a>
+
+            <a href="#contact">Contact</a>
+
+        </nav>
+
+
+        <div class="nav-right">
+
+            <div class="search-box">
+
+                <span>⌕</span>
+
+                <input
+                    type="text"
+                    id="searchInput"
+                    placeholder="Search clubs or competitions..."
+                >
+
+            </div>
+
+            <button class="menu-btn" onclick="toggleMenu()">
+                ☰
+            </button>
+
+        </div>
+
+    </div>
+
+</header>
+
+
+
+<!-- ================= HERO ================= -->
+
+<section class="hero" id="home">
+
+    <div class="hero-overlay"></div>
+
+    <div class="container hero-container">
+
+        <div class="hero-content">
+
+            <p class="small-heading">
+                DISCOVER YOUR PASSION
+            </p>
+
+            <h1>
+                Explore. Participate.<br>
+                <span>Create. Grow.</span>
+            </h1>
+
+            <p class="hero-description">
+                Join college clubs, participate in competitions,
+                <br>
+                showcase your talent and be a part of a vibrant community.
+            </p>
+
+            <div class="hero-buttons">
+
+                <a href="#clubs" class="primary-btn">
+                    Explore Clubs →
+                </a>
+
+                <a href="#competitions" class="secondary-btn">
+                    📅 View Competitions
+                </a>
+
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="hero-image">
+        <img src="images/student-clubs.jpg" alt="Student Clubs">
+    </div>
+
+</section>
+
+
+
+<!-- ================= CLUBS ================= -->
+
+<section class="clubs-section container" id="clubs">
+
+    <div class="section-header">
+
+        <div>
+            <h2>Our Clubs</h2>
+            <div class="blue-line"></div>
+        </div>
+
+        <div class="clubs-controls">
+<a href="javascript:void(0)" id="viewAllClubs">
+                View All Clubs
+            </a>
+
+        </div>
+
+    </div>
+
+
+    <div class="clubs-carousel">
+
+        <button type="button"
+                class="carousel-side-arrow left-arrow"
+                id="prevClubSide"
+                aria-label="Previous clubs">
+            ‹
+        </button>
+
+        <div class="clubs-window">
+
+            <div class="clubs-grid" id="clubsGrid">
+
+
+       <!-- CLUB 1 -->
+<a class="club-card" data-name="i-tech hub" href="techo/tech.html">
+
+    <div class="club-image tech">
+<img src="images/tech-poster.jpg" alt="i-Tech Hub club poster" loading="lazy">
+</div>
+
+<h3>i-Tech Hub</h3>
+
+    <p>Innovative Technical Hub</p>
+<span class="club-explore">Explore →</span>
+
+</a>
+
+
+        <!-- CLUB 2 -->
+
+        <a class="club-card" data-name="stage spotlight" href="../stage-spotlight/stage.html">
+
+            <div class="club-image stage">
+<img src="images/stage-poster.jpg" alt="Stage & Spotlight club poster" loading="lazy">
+</div>
+
+<h3>Stage & Spotlight</h3>
+
+            <p>Performing Arts Club</p>
+<span class="club-explore">Explore →</span>
+
+        </a>
+
+
+        <!-- CLUB 3 -->
+
+        <a class="club-card" data-name="social impact" href="../social-impact/soc.html">
+
+            <div class="club-image social">
+<img src="images/social-poster.jpg" alt="Social Impact club poster" loading="lazy">
+</div>
+
+<h3>Social Impact</h3>
+
+            <p>Community Service Club</p>
+<span class="club-explore">Explore →</span>
+
+        </a>
+
+
+        <!-- CLUB 4 -->
+
+        <a class="club-card" data-name="art expression" href="../arts-expressions/arts.html">
+
+            <div class="club-image art">
+<img src="images/art-poster.jpg" alt="Art & Expression club poster" loading="lazy">
+</div>
+
+<h3>Art & Expression</h3>
+
+            <p>Creative Arts Club</p>
+<span class="club-explore">Explore →</span>
+
+        </a>
+
+
+        <!-- CLUB 5 -->
+
+        <a class="club-card" data-name="voice vision" href="../speech/speech.html">
+
+            <div class="club-image voice">
+<img src="images/voice-poster.jpg" alt="Voice & Vision club poster" loading="lazy">
+</div>
+
+<h3>Voice & Vision</h3>
+
+            <p>Communication Club</p>
+<span class="club-explore">Explore →</span>
+
+        </a>
+
+
+        <!-- CLUB 6 -->
+
+        <a class="club-card" data-name="nature warrior" href="../nature/nature.html">
+
+            <div class="club-image nature">
+<img src="images/nature-poster.jpg" alt="Nature Warrior club poster" loading="lazy">
+</div>
+
+<h3>Nature Warrior</h3>
+
+            <p>Environmental Club</p>
+<span class="club-explore">Explore →</span>
+
+        </a>
+
+
+        <!-- CLUB 7 -->
+
+        <a class="club-card" data-name="frame focus" href="../frame-focus/frame.html">
+
+            <div class="club-image frame">
+<img src="images/frame-poster.jpg" alt="Frame & Focus club poster" loading="lazy">
+</div>
+
+<h3>Frame & Focus</h3>
+
+            <p>Photography Club</p>
+<span class="club-explore">Explore →</span>
+
+        </a>
+
+            </div>
+
+        </div>
+
+        <button type="button"
+                class="carousel-side-arrow right-arrow"
+                id="nextClubSide"
+                aria-label="Next clubs">
+            ›
+        </button>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= COMPETITIONS ================= -->
+
+<section class="container content-grid">
+
+    <div class="competition-section" id="competitions">
+
+        <div class="section-header">
+
+            <div>
+                <h2>Upcoming Competitions</h2>
+                <div class="blue-line"></div>
+            </div>
+
+            <a href="javascript:void(0)" id="viewAllCompetitions">
+                View All →
+            </a>
+
+        </div>
+
+
+        <div class="competition-grid" id="competitionGrid">
+
+
+            <div class="competition-card"
+                 data-name="coding challenge">
+
+                <div class="competition-icon blue">
+                    &lt;/&gt;
+                </div>
+
+                <div class="competition-info">
+
+                    <h3>Coding Challenge</h3>
+
+                    <p>i-Tech Hub</p>
+
+                    <small>
+                        📅 Oct 10, 2026
+                    </small>
+
+                </div>
+
+                <button onclick="registerEvent('Coding Challenge', 'i-Tech Hub')">
+                    Register
+                </button>
+
+            </div>
+
+
+            <div class="competition-card"
+                 data-name="solo singing">
+
+                <div class="competition-icon purple">
+                    🎤
+                </div>
+
+                <div class="competition-info">
+
+                    <h3>Solo Singing</h3>
+
+                    <p>Stage & Spotlight</p>
+
+                    <small>
+                        📅 Oct 12, 2026
+                    </small>
+
+                </div>
+
+                <button onclick="registerEvent('Solo Singing', 'Stage & Spotlight')">
+                    Register
+                </button>
+
+            </div>
+
+
+            <div class="competition-card hidden-competition"
+                 data-name="poster making">
+
+                <div class="competition-icon orange">
+                    🎨
+                </div>
+
+                <div class="competition-info">
+
+                    <h3>Poster Making</h3>
+
+                    <p>Art & Expression</p>
+
+                    <small>
+                        📅 Oct 15, 2026
+                    </small>
+
+                </div>
+
+                <button onclick="registerEvent('Poster Making', 'Art & Expression')">
+                    Register
+                </button>
+
+            </div>
+
+
+            <div class="competition-card hidden-competition"
+                 data-name="photography contest">
+
+                <div class="competition-icon gold">
+                    📷
+                </div>
+
+                <div class="competition-info">
+
+                    <h3>Photography Contest</h3>
+
+                    <p>Frame & Focus</p>
+
+                    <small>
+                        📅 Oct 18, 2026
+                    </small>
+
+                </div>
+
+                <button onclick="registerEvent('Photography Contest', 'Frame & Focus')">
+                    Register
+                </button>
+
+            </div>
+
+        </div>
+
+    </div>
+
+
+
+    <!-- QUICK ACTIONS -->
+
+    <div class="quick-section">
+
+        <div class="section-header">
+
+            <div>
+                <h2>Quick Actions</h2>
+                <div class="blue-line"></div>
+            </div>
+
+        </div>
+
+
+        <div class="quick-grid">
+
+            <button onclick="scrollToClubs()">
+
+                <span>👥</span>
+
+                <strong>
+                    Register<br>
+                    for a Club
+                </strong>
+
+            </button>
+
+
+            <button onclick="scrollToCompetitions()">
+
+                <span>🏆</span>
+
+                <strong>
+                    View<br>
+                    Competitions
+                </strong>
+
+            </button>
+
+
+            <button onclick="showMyRegistrations()">
+
+                <span>📋</span>
+
+                <strong>
+                    My<br>
+                    Registrations
+                </strong>
+
+            </button>
+
+
+            <button onclick="scrollToCompetitions()">
+
+                <span>📅</span>
+
+                <strong>
+                    Event<br>
+                    Calendar
+                </strong>
+
+            </button>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= GALLERY ================= -->
+
+<section class="gallery" id="gallery">
+
+    <div class="container">
+
+        <div class="section-header gallery-header">
+
+            <div>
+                <h2>Gallery</h2>
+                <div class="yellow-line"></div>
+            </div>
+
+            <a href="#gallery">
+                View Gallery →
+            </a>
+
+        </div>
+
+
+        <div class="gallery-grid">
+
+            <div class="gallery-item gallery-one">
+                Cultural Fest
+            </div>
+
+            <div class="gallery-item gallery-two">
+                Tech Events
+            </div>
+
+            <div class="gallery-item gallery-three">
+                Sports & Fun
+            </div>
+
+            <div class="gallery-item gallery-four">
+                Creative Arts
+            </div>
+
+        </div>
+
+    </div>
+
+</section>
+
+
+
+<!-- ================= ABOUT ================= -->
+
+<section class="about container" id="about">
+
+    <div>
+
+        <p class="about-small">
+            ABOUT THE PLATFORM
+        </p>
+
+        <h2>
+            A place to explore,
+            express and connect.
+        </h2>
+
+    </div>
+
+
+    <p>
+
+        Ideal College Clubs brings student communities,
+        competitions and campus activities together in one
+        simple digital platform.
+
+        Discover a club, register for an event and create
+        memorable college experiences.
+
+    </p>
+
+</section>
+
+
+
+<!-- ================= CONTACT ================= -->
+
+<section class="contact container" id="contact">
+
+    <div>
+
+        <p class="about-small">
+            GET IN TOUCH
+        </p>
+
+        <h2>
+            Have a question?
+        </h2>
+
+        <p>
+            Contact the college clubs team for membership,
+            competitions and event information.
+        </p>
+
+    </div>
+
+
+    <button
+        class="primary-btn"
+        onclick="contactUs()">
+
+        Contact Us →
+
+    </button>
+
+</section>
+
+
+
+<!-- ================= FOOTER ================= -->
+
+<footer>
+
+    <div class="container footer-content">
+
+
+        <div class="footer-stat">
+
+            <span>👥</span>
+
+            <div>
+                <strong>7</strong>
+                <p>Active Clubs</p>
+            </div>
+
+        </div>
+
+
+        <div class="footer-stat">
+
+            <span>👥</span>
+
+            <div>
+                <strong>1000+</strong>
+                <p>Students Involved</p>
+            </div>
+
+        </div>
+
+
+        <div class="footer-stat">
+
+            <span>🏆</span>
+
+            <div>
+                <strong>50+</strong>
+                <p>Competitions Conducted</p>
+            </div>
+
+        </div>
+
+
+        <div class="footer-stat">
+
+            <span>⭐</span>
+
+            <div>
+                <strong>Countless</strong>
+                <p>Memories Created</p>
+            </div>
+
+        </div>
+
+
+        <blockquote>
+
+            "A platform to explore, express,
+            <br>
+            connect and create a better tomorrow."
+
+        </blockquote>
+
+    </div>
+
+
+
+    <!-- HELPDESK -->
+
+    <div class="container helpdesk" id="helpdesk">
+
+        <div class="helpdesk-title">
+            <span class="helpdesk-bob">🛟</span>
+            <div>
+                <h3>Help Desk</h3>
+                <p>Need help with clubs, registration or competitions? Reach out to us.</p>
+            </div>
+            <div class="helpdesk-status" id="helpdeskStatus" aria-live="polite">
+                <i></i><b>Checking…</b>
+            </div>
+        </div>
+
+        <div class="helpdesk-grid">
+
+            <a class="helpdesk-card" href="mailto:clubs@idealcollege.edu.in">
+                <span>✉️</span>
+                <div>
+                    <small>Email</small>
+                    <strong>clubs@idealcollege.edu.in</strong>
+                </div>
+            </a>
+
+            <a class="helpdesk-card" href="tel:+910000000000">
+                <span>📞</span>
+                <div>
+                    <small>Phone</small>
+                    <strong>+91 00000 00000</strong>
+                </div>
+            </a>
+
+            <div class="helpdesk-card">
+                <span>📍</span>
+                <div>
+                    <small>Address</small>
+                    <strong>Ideal Degree &amp; PG College,<br>Kakinada, Andhra Pradesh</strong>
+                </div>
+            </div>
+
+            <div class="helpdesk-card">
+                <span>🕘</span>
+                <div>
+                    <small>Help Desk Hours</small>
+                    <strong>Mon – Sat, 9:00 AM – 4:30 PM</strong>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- REPORT OPTIONS -->
+
+        <div class="report-panel" id="reportPanel">
+
+            <div class="report-head">
+                <h4>📣 Report an issue</h4>
+                <p>Pick what went wrong and tell us a little more.</p>
+            </div>
+
+            <div class="report-options" role="group" aria-label="Report type">
+                <button type="button" class="report-chip" data-type="Registration problem"><span>📝</span>Registration problem</button>
+                <button type="button" class="report-chip" data-type="Club or coordinator issue"><span>👥</span>Club / coordinator</button>
+                <button type="button" class="report-chip" data-type="Competition issue"><span>🏆</span>Competition issue</button>
+                <button type="button" class="report-chip" data-type="Website bug"><span>🐞</span>Website bug</button>
+                <button type="button" class="report-chip" data-type="Other"><span>💬</span>Something else</button>
+            </div>
+
+            <div class="report-form-wrap" id="reportFormWrap">
+                <div class="report-form-inner">
+
+                    <form class="report-form" id="reportForm" novalidate>
+                        <div class="report-selected">Reporting: <strong id="reportTypeLabel">—</strong></div>
+
+                        <div class="report-row">
+                            <input type="text" id="reportName" placeholder="Your name" autocomplete="name" required>
+                            <input type="email" id="reportEmail" placeholder="Email or phone (optional)" autocomplete="email">
+                        </div>
+
+                        <textarea id="reportDetails" rows="3" maxlength="500"
+                                  placeholder="Describe the issue (club, competition, what happened)…" required></textarea>
+
+                        <div class="report-actions">
+                            <small id="reportCount">0 / 500</small>
+                            <button type="button" class="report-cancel" id="reportCancel">Cancel</button>
+                            <button type="submit" class="report-submit">Send report →</button>
+                        </div>
+
+                        <p class="report-error" id="reportError" role="alert"></p>
+                    </form>
+
+                    <div class="report-done" id="reportDone" hidden>
+                        <div class="report-check">✓</div>
+                        <strong>Report sent</strong>
+                        <p>Reference <b id="reportRef">IC-0000</b> — we'll get back to you during help desk hours.</p>
+                        <button type="button" class="report-cancel" id="reportAnother">Report another</button>
+                    </div>
+
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+    <div class="copyright">
+
+        © 2026 Ideal Degree & PG College.
+        All Rights Reserved.
+
+    </div>
+
+</footer>
+
+
+
+<!-- TOAST -->
+
+<div id="toast"></div>
+
+
+<script src="auth.js"></script>
+<script src="main.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin Dashboard - Ideal College Clubs</title>
+<link rel="stylesheet" href="staff.css">
+</head>
+<body>
+<header class="topbar">
+  <a class="brand" href="main.html"><i>IC</i><span>IDEAL ADMIN<small>CLUBS PORTAL</small></span></a>
+  <nav id="tabs">
+    <a data-tab="overview" class="active">Overview</a>
+    <a data-tab="students">Students</a>
+    <a data-tab="registrations">Registrations</a>
+    <a data-tab="coordinators">Coordinators</a>
+  </nav>
+  <span class="who">👤 Administrator</span>
+  <a class="btn ghost sm" href="main.html" style="background:transparent;color:#fff;border-color:#5b7396">Website</a>
+  <button class="btn danger sm" id="logout">Logout</button>
+</header>
+
+<main class="main">
+
+  <!-- OVERVIEW -->
+  <section class="panel show" id="p-overview">
+    <h2 class="title">Overview</h2>
+    <p class="lead">Summary of students, registrations and club coordinators.</p>
+    <div class="stats" id="stats"></div>
+    <div class="card"><h3>Registrations by club</h3><div class="clubs-bar" id="clubBars"></div></div>
+  </section>
+
+  <!-- STUDENTS -->
+  <section class="panel" id="p-students">
+    <h2 class="title">Registered Students</h2>
+    <p class="lead">Students who created an account on this site.</p>
+    <div class="toolbar">
+      <input id="stuSearch" placeholder="Search by name, roll number, mobile...">
+      <button class="btn sm" id="stuCsv">⬇ Export CSV</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Name</th><th>Roll No.</th><th>Mobile</th><th>Year</th><th>Group</th><th>Joined</th><th></th></tr></thead>
+      <tbody id="stuBody"></tbody>
+    </table></div>
+  </section>
+
+  <!-- REGISTRATIONS -->
+  <section class="panel" id="p-registrations">
+    <h2 class="title">Club &amp; Competition Registrations</h2>
+    <p class="lead">Everything students registered for, across all clubs.</p>
+    <div class="toolbar">
+      <input id="regSearch" placeholder="Search student, event or club...">
+      <select id="regClub"></select>
+      <select id="regType"><option value="">All types</option><option>Competition</option><option>Club Join</option></select>
+      <button class="btn sm" id="regCsv">⬇ Export CSV</button>
+    </div>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Student</th><th>Roll No.</th><th>Mobile</th><th>Type</th><th>Event / Club</th><th>Club</th><th>Date</th></tr></thead>
+      <tbody id="regBody"></tbody>
+    </table></div>
+  </section>
+
+  <!-- COORDINATORS -->
+  <section class="panel" id="p-coordinators">
+    <h2 class="title">Club Coordinators</h2>
+    <p class="lead">Admin and coordinators log in with the same staff token. Coordinators also enter their name and club.</p>
+    <div class="card">
+      <h3>Staff token</h3>
+      <p style="font-size:14px;line-height:1.7">To change the token, edit <b>STAFF_TOKEN</b> in <code>mainpart/staff-config.js</code>, save, and refresh.
+      After a change everyone is logged out and must use the new token.</p>
+    </div>
+    <h3 style="margin-bottom:10px">Recent coordinator logins</h3>
+    <div class="table-wrap"><table>
+      <thead><tr><th>Coordinator</th><th>Club</th><th>Logged in at</th></tr></thead>
+      <tbody id="coBody"></tbody>
+    </table></div>
+  </section>
+</main>
+
+<script src="staff-config.js"></script>
+<script src="staff.js"></script>
+<script>
+(function () {
+  var S = IdealStaff, esc = S.esc;
+  if (!S.requireRole("admin")) return;
+  function $(id) { return document.getElementById(id); }
+
+  /* tabs */
+  function openTab(t) {
+    document.querySelectorAll(".panel").forEach(function (p) { p.classList.toggle("show", p.id === "p-" + t); });
+    document.querySelectorAll("#tabs a").forEach(function (a) { a.classList.toggle("active", a.dataset.tab === t); });
+    if (location.hash !== "#" + t) history.replaceState(null, "", "#" + t);
+    render();
+  }
+  document.querySelectorAll("#tabs a").forEach(function (a) { a.onclick = function () { openTab(a.dataset.tab); }; });
+  $("logout").onclick = function () { S.logout(); location.href = "staff-login.html"; };
+
+  /* fill selects */
+  $("regClub").innerHTML = '<option value="">All clubs</option>' + S.CLUBS.map(function (c) { return "<option>" + esc(c) + "</option>"; }).join("");
+
+  function empty(cols, text) { return '<tr><td colspan="' + cols + '" class="empty">' + text + "</td></tr>"; }
+
+  function renderOverview() {
+    var users = S.allUsers(), regs = S.allRegistrations(), co = S.coordinatorLog();
+    $("stats").innerHTML =
+      '<div class="stat"><b>' + users.length + "</b><span>Registered students</span></div>" +
+      '<div class="stat"><b>' + regs.length + "</b><span>Total registrations</span></div>" +
+      '<div class="stat"><b>' + regs.filter(function (r) { return r.type === "Competition"; }).length + "</b><span>Competition entries</span></div>" +
+      '<div class="stat"><b>' + co.length + "</b><span>Coordinator logins</span></div>";
+    $("clubBars").innerHTML = S.CLUBS.map(function (c) {
+      var n = regs.filter(function (r) { return r.club === c; }).length;
+      return "<div>" + esc(c) + "<b>" + n + "</b></div>";
+    }).join("");
+  }
+
+  function renderStudents() {
+    var q = $("stuSearch").value.toLowerCase();
+    var rows = S.allUsers().filter(function (u) {
+      return !q || (u.name + " " + u.roll + " " + u.mobile + " " + u.group).toLowerCase().indexOf(q) >= 0;
+    });
+    $("stuBody").innerHTML = rows.length ? rows.map(function (u) {
+      return "<tr><td>" + esc(u.name) + "</td><td>" + esc(u.roll) + "</td><td>" + esc(u.mobile) + "</td><td>" + esc(u.year) +
+        "</td><td>" + esc(u.group) + "</td><td>" + esc((u.createdAt || "").slice(0, 10)) +
+        '</td><td><button class="btn danger sm" data-del="' + esc(u.roll) + '">Delete</button></td></tr>';
+    }).join("") : empty(7, "No students found.");
+  }
+
+  function filteredRegs() {
+    var q = $("regSearch").value.toLowerCase(), club = $("regClub").value, type = $("regType").value;
+    return S.allRegistrations().filter(function (r) {
+      return (!club || r.club === club) && (!type || r.type === type) &&
+        (!q || (r.name + " " + r.roll + " " + r.title + " " + r.club).toLowerCase().indexOf(q) >= 0);
+    });
+  }
+  function renderRegs() {
+    var rows = filteredRegs();
+    $("regBody").innerHTML = rows.length ? rows.map(function (r) {
+      return "<tr><td>" + esc(r.name) + "</td><td>" + esc(r.roll) + "</td><td>" + esc(r.mobile) +
+        '</td><td><span class="badge info">' + esc(r.type) + "</span></td><td>" + esc(r.title) + "</td><td>" + esc(r.club) + "</td><td>" + esc(r.date) + "</td></tr>";
+    }).join("") : empty(7, "No registrations yet.");
+  }
+
+  function renderCoords() {
+    var list = S.coordinatorLog();
+    $("coBody").innerHTML = list.length ? list.map(function (c) {
+      return "<tr><td>" + esc(c.name) + "</td><td>" + esc(c.club) + "</td><td>" + esc(c.time) + "</td></tr>";
+    }).join("") : empty(3, "No coordinator has logged in yet.");
+  }
+
+  function render() {
+    renderOverview(); renderStudents(); renderRegs(); renderCoords();
+  }
+
+  /* events */
+  $("stuSearch").oninput = renderStudents;
+  ["regSearch", "regClub", "regType"].forEach(function (id) { $(id).oninput = renderRegs; $(id).onchange = renderRegs; });
+
+  $("stuBody").onclick = function (e) {
+    var r = e.target.getAttribute("data-del");
+    if (r && confirm("Delete student " + r + " and their registrations?")) { S.deleteUser(r); render(); }
+  };
+  $("stuCsv").onclick = function () {
+    S.downloadCSV("students.csv", ["Name", "Roll", "Mobile", "Year", "Group", "Joined"],
+      S.allUsers().map(function (u) { return [u.name, u.roll, u.mobile, u.year, u.group, (u.createdAt || "").slice(0, 10)]; }));
+  };
+  $("regCsv").onclick = function () {
+    S.downloadCSV("registrations.csv", ["Student", "Roll", "Mobile", "Year", "Group", "Type", "Title", "Club", "Date"],
+      filteredRegs().map(function (r) { return [r.name, r.roll, r.mobile, r.year, r.group, r.type, r.title, r.club, r.date]; }));
+  };
+
+  var start = (location.hash || "#overview").slice(1);
+  openTab(["overview", "students", "registrations", "coordinators"].indexOf(start) >= 0 ? start : "overview");
+})();
+</script>
+</body>
+</html>

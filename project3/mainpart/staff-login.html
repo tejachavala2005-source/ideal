@@ -1,0 +1,417 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Staff Login - Admin & Coordinator</title>
+<link rel="stylesheet" href="staff.css">
+</head>
+
+<body>
+
+<div class="login-wrap">
+  <div class="login-card">
+
+    <div class="lock">🔐</div>
+
+    <h1>Staff Login</h1>
+    <p class="sub">Enter your unique access token to continue</p>
+
+    <!-- ADMIN / COORDINATOR TABS -->
+    <div class="tabs">
+      <button class="tab active" id="tabAdmin" type="button">
+        Admin
+      </button>
+
+      <button class="tab" id="tabCoord" type="button">
+        Coordinator
+      </button>
+    </div>
+
+    <div class="msg" id="msg"></div>
+
+    <!-- STAFF LOGIN FORM -->
+    <form id="staffForm" autocomplete="off" novalidate>
+
+      <!-- TOKEN -->
+      <div class="field">
+
+        <label id="tokenLabel" for="token">
+          Staff Token
+        </label>
+
+        <div class="token-box">
+
+          <input
+            type="password"
+            id="token"
+            placeholder="Enter Access token"
+            autocomplete="off"
+            spellcheck="false"
+          >
+
+          <span
+            class="eye"
+            id="eye"
+            title="Show / hide"
+          >👁</span>
+
+        </div>
+
+        <p class="hint" id="hint">
+          Enter the staff token to open the admin dashboard.
+        </p>
+
+      </div>
+
+
+      <!-- COORDINATOR DETAILS -->
+      <div id="coordFields" style="display:none">
+
+        <div class="field" style="margin-bottom:16px">
+
+          <label for="cName">
+            Your name
+          </label>
+
+          <div class="token-box">
+
+            <input
+              type="text"
+              id="cName"
+              placeholder="e.g. Mr. Raj Kumar"
+              style="
+                letter-spacing:0;
+                font-family:inherit;
+                padding-right:16px;
+              "
+            >
+
+          </div>
+
+        </div>
+
+
+        <div class="field" style="margin-bottom:6px">
+
+          <label for="cClub">
+            Your club
+          </label>
+
+          <div class="token-box">
+
+            <select
+              id="cClub"
+              style="
+                width:100%;
+                height:54px;
+                padding:0 14px;
+                border:1px solid #d3dbe5;
+                border-radius:12px;
+                font-size:15px;
+                background:#fff;
+              "
+            ></select>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- SUBMIT -->
+      <button
+        type="submit"
+        class="btn block"
+        id="submitBtn"
+        style="margin-top:14px"
+      >
+        Login as Admin →
+      </button>
+
+    </form>
+
+
+    <!-- LINKS -->
+    <div class="links">
+
+      <a href="main.html">
+        ← Back to Home
+      </a>
+
+      <a href="logbtn.html">
+        Student Login
+      </a>
+
+    </div>
+
+  </div>
+</div>
+
+
+<!-- STAFF FILES -->
+<script src="staff-config.js"></script>
+<script src="staff.js"></script>
+
+
+<script>
+
+  /* =====================================================
+     STAFF LOGIN
+     ADMIN + COORDINATOR
+  ===================================================== */
+
+  var role =
+    new URLSearchParams(location.search).get("role") === "coordinator"
+      ? "coordinator"
+      : "admin";
+
+
+  var tabAdmin = document.getElementById("tabAdmin");
+  var tabCoord = document.getElementById("tabCoord");
+
+  var input = document.getElementById("token");
+  var msg = document.getElementById("msg");
+
+
+  /* =====================================================
+     LOAD CLUB LIST
+  ===================================================== */
+
+  document.getElementById("cClub").innerHTML =
+    '<option value="">-- Select your club --</option>' +
+
+    IdealStaff.CLUBS.map(function (c) {
+
+      return "<option value=\"" +
+        IdealStaff.esc(c) +
+        "\">" +
+        IdealStaff.esc(c) +
+        "</option>";
+
+    }).join("");
+
+
+  /* =====================================================
+     CHANGE ROLE
+  ===================================================== */
+
+  function setRole(r) {
+
+    role = r;
+
+    tabAdmin.classList.toggle(
+      "active",
+      r === "admin"
+    );
+
+    tabCoord.classList.toggle(
+      "active",
+      r === "coordinator"
+    );
+
+
+    var admin = r === "admin";
+
+
+    document.getElementById("tokenLabel").textContent =
+      "Staff Token";
+
+
+    document.getElementById("coordFields").style.display =
+      admin ? "none" : "block";
+
+
+    document.getElementById("hint").textContent = admin
+
+      ? "Enter the staff token to open the admin dashboard."
+
+      : "Enter the staff token, your name and your club.";
+
+
+    document.getElementById("submitBtn").textContent = admin
+
+      ? "Login as Admin →"
+
+      : "Login as Coordinator →";
+
+
+    input.value = "";
+
+    msg.className = "msg";
+
+    msg.textContent = "";
+
+  }
+
+
+  tabAdmin.onclick = function () {
+    setRole("admin");
+  };
+
+
+  tabCoord.onclick = function () {
+    setRole("coordinator");
+  };
+
+
+  /* =====================================================
+     SHOW / HIDE TOKEN
+  ===================================================== */
+
+  document.getElementById("eye").onclick = function () {
+
+    var show = input.type === "password";
+
+    input.type = show ? "text" : "password";
+
+    this.textContent =
+      show ? "🙈" : "👁";
+
+  };
+
+
+  setRole(role);
+
+
+  /* =====================================================
+     EXISTING STAFF SESSION
+  ===================================================== */
+
+  var s = IdealStaff.session();
+
+  if (s) {
+
+    location.replace(
+      s.role === "admin"
+        ? "admin.html"
+        : "coordinator.html"
+    );
+
+  }
+
+
+  /* =====================================================
+     STAFF LOGIN
+  ===================================================== */
+
+  document.getElementById("staffForm")
+    .addEventListener("submit", function (e) {
+
+      e.preventDefault();
+
+      msg.className = "msg";
+
+      msg.textContent = "";
+
+
+      var t = input.value.trim();
+
+
+      if (!t) {
+
+        msg.textContent =
+          "Please enter the staff token.";
+
+        msg.className = "msg error";
+
+        return;
+
+      }
+
+
+      try {
+
+        var sess;
+
+
+        if (role === "admin") {
+
+          sess = IdealStaff.adminLogin(t);
+
+        } else {
+
+          var coordinatorName =
+            document.getElementById("cName").value.trim();
+
+          var coordinatorClub =
+            document.getElementById("cClub").value;
+
+
+          if (!coordinatorName) {
+
+            msg.textContent =
+              "Please enter your name.";
+
+            msg.className = "msg error";
+
+            return;
+
+          }
+
+
+          if (!coordinatorClub) {
+
+            msg.textContent =
+              "Please select your club.";
+
+            msg.className = "msg error";
+
+            return;
+
+          }
+
+
+          sess = IdealStaff.coordinatorLogin(
+            t,
+            coordinatorName,
+            coordinatorClub
+          );
+
+        }
+
+
+        /* =================================================
+           LOGIN SUCCESS
+        ================================================= */
+
+        msg.textContent =
+          "Welcome, " +
+          sess.name +
+          "! Opening dashboard...";
+
+        msg.className = "msg ok";
+
+
+        setTimeout(function () {
+
+          if (sess.role === "admin") {
+
+            location.href = "admin.html";
+
+          } else {
+
+            location.href = "coordinator.html";
+
+          }
+
+        }, 600);
+
+
+      } catch (err) {
+
+        msg.textContent =
+          err.message ||
+          "Login failed. Please try again.";
+
+        msg.className = "msg error";
+
+      }
+
+    });
+
+</script>
+
+</body>
+</html>

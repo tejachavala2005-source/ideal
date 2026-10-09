@@ -1,0 +1,4 @@
+const menu=document.getElementById('menu'),nav=document.getElementById('nav');menu.onclick=()=>nav.classList.toggle('open');document.querySelectorAll('nav a,.tabs a').forEach(a=>a.onclick=()=>nav.classList.remove('open'));
+document.querySelectorAll('[data-event]').forEach(b=>b.onclick=()=>{document.getElementById('form').scrollIntoView({behavior:'smooth',block:'center'});alert('Registration selected for: '+b.dataset.event)});
+document.getElementById('form').onsubmit=e=>{e.preventDefault();if(!e.target.checkValidity()){e.target.reportValidity();return}document.getElementById('ok').style.display='block';e.target.reset();setTimeout(()=>document.getElementById('ok').style.display='none',5000)};
+document.getElementById('search').onkeydown=e=>{if(e.key==='Enter'){let q=e.target.value.toLowerCase(),x=[...document.querySelectorAll('h2,h3')].find(x=>x.textContent.toLowerCase().includes(q));x?x.scrollIntoView({behavior:'smooth'}):alert('No matching section found.')}};

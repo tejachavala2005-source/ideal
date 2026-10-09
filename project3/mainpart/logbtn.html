@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Student Login</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #f5faf7;
+            padding: 20px;
+        }
+
+        .login-container {
+            width: 100%;
+            max-width: 500px;
+            background: white;
+            padding: 40px;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.10);
+            border-top: 5px solid #006b3c;
+        }
+
+        .logo {
+            text-align: center;
+            margin-bottom: 10px;
+        }
+
+        .logo-icon {
+            width: 65px;
+            height: 65px;
+            margin: auto;
+            border-radius: 50%;
+            background: #006b3c;
+            color: white;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 30px;
+            font-weight: bold;
+        }
+
+        h1 {
+            text-align: center;
+            color: #12372a;
+            margin-top: 15px;
+            font-size: 28px;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #777;
+            margin: 8px 0 30px;
+            font-size: 15px;
+        }
+
+        .form-group {
+            margin-bottom: 22px;
+        }
+
+        label {
+            display: block;
+            font-size: 17px;
+            font-weight: 600;
+            color: #17231e;
+            margin-bottom: 9px;
+        }
+
+        .required {
+            color: #d62828;
+        }
+
+        input {
+            width: 100%;
+            height: 58px;
+            padding: 0 18px;
+            border: 1px solid #d7dedb;
+            border-radius: 12px;
+            outline: none;
+            font-size: 16px;
+            color: #333;
+            transition: 0.3s;
+        }
+
+        input::placeholder {
+            color: #9a9a9a;
+        }
+
+        input:focus {
+            border-color: #006b3c;
+            box-shadow: 0 0 0 3px rgba(0, 107, 60, 0.10);
+        }
+
+        .password-box {
+            position: relative;
+        }
+
+        .password-box input {
+            padding-right: 55px;
+        }
+
+        .show-password {
+            position: absolute;
+            right: 18px;
+            top: 17px;
+            cursor: pointer;
+            font-size: 20px;
+            color: #006b3c;
+        }
+
+        .options {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin: 5px 0 25px;
+            font-size: 14px;
+        }
+
+        .remember {
+            display: flex;
+            align-items: center;
+            gap: 7px;
+            color: #555;
+        }
+
+        .remember input {
+            width: 16px;
+            height: 16px;
+        }
+
+        .forgot {
+            color: #006b3c;
+            text-decoration: none;
+            font-weight: 600;
+        }
+
+        .login-btn {
+            width: 100%;
+            height: 60px;
+            border: none;
+            border-radius: 12px;
+            background: #006b3c;
+            color: white;
+            font-size: 19px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .login-btn:hover {
+            background: #004f2c;
+            transform: translateY(-1px);
+        }
+
+        .register {
+            text-align: center;
+            margin-top: 25px;
+            color: #666;
+            font-size: 15px;
+        }
+
+        .register a {
+            color: #006b3c;
+            text-decoration: none;
+            font-weight: bold;
+        }
+
+        .back-home { display:inline-block; margin-bottom:14px; color:#006b3c; font-weight:600; font-size:14px; text-decoration:none; }
+        .back-home:hover { text-decoration:underline; }
+        .msg { display:none; padding:12px 14px; border-radius:10px; margin-bottom:18px; font-size:14px; font-weight:600; }
+        .msg.error { display:block; background:#fdecec; color:#b42318; }
+        .msg.ok { display:block; background:#e8f7ef; color:#006b3c; }
+        #resetForm { display:none; }
+        #resetForm.show { display:block; }
+        #loginForm.hide { display:none; }
+        .link-btn { background:none; border:none; color:#006b3c; font-weight:600; cursor:pointer; margin-top:14px; font-size:14px; width:100%; }
+
+        @media (max-width: 500px) {
+            .login-container {
+                padding: 28px 22px;
+            }
+
+            h1 {
+                font-size: 25px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="login-container">
+
+        <a href="main.html" class="back-home">← Back to Home</a>
+
+        <div class="logo">
+            <div class="logo-icon">🎓</div>
+        </div>
+
+        <h1>Student Login</h1>
+
+        <p class="subtitle">
+            Login to access your student account
+        </p>
+
+        <div class="msg" id="msg"></div>
+
+        <form id="loginForm">
+
+            <div class="form-group">
+                <label>
+                    Roll Number <span class="required">*</span>
+                </label>
+
+                <input
+                    type="text"
+                    id="rollNumber"
+                    placeholder="Enter your roll number"
+                    required
+                >
+            </div>
+
+            <div class="form-group">
+                <label>
+                    Password <span class="required">*</span>
+                </label>
+
+                <div class="password-box">
+                    <input
+                        type="password"
+                        id="password"
+                        placeholder="Enter your password"
+                        required
+                    >
+
+                    <span
+                        class="show-password"
+                        onclick="togglePassword()"
+                        id="eye"
+                    >👁</span>
+                </div>
+            </div>
+
+            <div class="options">
+
+                <label class="remember">
+                    <input type="checkbox">
+                    Remember me
+                </label>
+
+                <a href="#" class="forgot" id="forgotLink">
+                    Forgot Password?
+                </a>
+
+            </div>
+
+            <button type="submit" class="login-btn">
+                Login →
+            </button>
+
+        </form>
+
+        <form id="resetForm" novalidate>
+            <div class="form-group">
+                <label>Roll Number <span class="required">*</span></label>
+                <input type="text" id="resetRoll" placeholder="Enter your roll number">
+            </div>
+            <div class="form-group">
+                <label>Registered Mobile Number <span class="required">*</span></label>
+                <input type="tel" id="resetMobile" maxlength="10" placeholder="10-digit mobile number">
+            </div>
+            <div class="form-group">
+                <label>New Password <span class="required">*</span></label>
+                <input type="password" id="resetPassword" placeholder="At least 6 characters">
+            </div>
+            <button type="submit" class="login-btn">Reset Password</button>
+            <button type="button" class="link-btn" id="backToLogin">← Back to Login</button>
+        </form>
+
+        <div class="register">
+            Don't have an account?
+            <a href="registration.html">Register Now</a>
+        </div>
+
+        <div class="register" style="margin-top:12px">
+            Admin or Club Coordinator?
+            <a href="staff-login.html"
+   data-module-role="STAFF">
+    Staff
+</a>
+        </div>
+
+    </div>
+
+
+    <script src="auth.js"></script>
+    <script>
+        var msg = document.getElementById("msg");
+        function show(text, type) { msg.textContent = text; msg.className = "msg " + type; }
+        function clearMsg() { msg.className = "msg"; msg.textContent = ""; }
+
+        function togglePassword() {
+            var password = document.getElementById("password");
+            var eye = document.getElementById("eye");
+            if (password.type === "password") { password.type = "text"; eye.textContent = "\uD83D\uDE48"; }
+            else { password.type = "password"; eye.textContent = "\uD83D\uDC41"; }
+        }
+
+        function nextUrl() {
+            var next = new URLSearchParams(location.search).get("next");
+            return next || IdealAuth.urls.home;
+        }
+
+        // Already signed in? go straight to the site
+        if (IdealAuth.current()) { location.replace(nextUrl()); }
+
+        var registeredFlag = new URLSearchParams(location.search).get("registered");
+        if (registeredFlag) show("Registration successful! Please login with your roll number and password.", "ok");
+
+        document.getElementById("loginForm").addEventListener("submit", function (event) {
+            event.preventDefault();
+            clearMsg();
+            var roll = document.getElementById("rollNumber").value.trim();
+            var pass = document.getElementById("password").value;
+            var remember = this.querySelector('input[type="checkbox"]').checked;
+            if (!roll || !pass) { show("Please enter your roll number and password.", "error"); return; }
+
+            IdealAuth.login(roll, pass, remember).then(function (user) {
+                show("Welcome back, " + user.name + "! Redirecting...", "ok");
+                setTimeout(function () { location.href = nextUrl(); }, 700);
+            }).catch(function (err) { show(err.message, "error"); });
+        });
+
+        // Forgot password
+        var loginForm = document.getElementById("loginForm");
+        var resetForm = document.getElementById("resetForm");
+        document.getElementById("forgotLink").addEventListener("click", function (e) {
+            e.preventDefault(); clearMsg();
+            loginForm.classList.add("hide"); resetForm.classList.add("show");
+        });
+        document.getElementById("backToLogin").addEventListener("click", function () {
+            clearMsg(); resetForm.classList.remove("show"); loginForm.classList.remove("hide");
+        });
+        resetForm.addEventListener("submit", function (e) {
+            e.preventDefault(); clearMsg();
+            var roll = document.getElementById("resetRoll").value.trim();
+            var mobile = document.getElementById("resetMobile").value.trim();
+            var np = document.getElementById("resetPassword").value;
+            if (!roll || !/^[6-9][0-9]{9}$/.test(mobile)) { show("Enter your roll number and a valid 10-digit mobile number.", "error"); return; }
+            if (np.length < 6) { show("New password must contain at least 6 characters.", "error"); return; }
+            IdealAuth.resetPassword(roll, mobile, np).then(function () {
+                resetForm.reset(); resetForm.classList.remove("show"); loginForm.classList.remove("hide");
+                show("Password updated. Please login with your new password.", "ok");
+            }).catch(function (err) { show(err.message, "error"); });
+        });
+    </script>
+
+</body>
+</html>

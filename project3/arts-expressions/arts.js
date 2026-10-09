@@ -1,0 +1,63 @@
+document.addEventListener("DOMContentLoaded", () => {
+  const menuBtn = document.getElementById("menuBtn");
+  const navbar = document.querySelector(".navbar");
+
+  menuBtn?.addEventListener("click", () => navbar.classList.toggle("mobile-open"));
+
+  document.querySelectorAll(".navbar a, .quick-nav a").forEach(link => {
+    link.addEventListener("click", () => navbar.classList.remove("mobile-open"));
+  });
+
+  const form = document.getElementById("joinForm");
+  const popup = document.getElementById("successPopup");
+
+  form?.addEventListener("submit", e => {
+    e.preventDefault();
+    const mobile = document.getElementById("mobile").value.trim();
+
+    if (!/^[0-9]{10}$/.test(mobile)) {
+      alert("Please enter a valid 10-digit mobile number.");
+      return;
+    }
+
+    popup.classList.add("show");
+    form.reset();
+  });
+
+  const hidePopup = () => popup.classList.remove("show");
+  document.getElementById("closePopup")?.addEventListener("click", hidePopup);
+  document.getElementById("popupOk")?.addEventListener("click", hidePopup);
+  popup?.addEventListener("click", e => { if (e.target === popup) hidePopup(); });
+
+  document.querySelectorAll(".register-event").forEach(button => {
+    button.addEventListener("click", () => {
+      document.getElementById("join").scrollIntoView({behavior:"smooth"});
+      setTimeout(() => document.getElementById("studentName")?.focus(), 700);
+    });
+  });
+
+  document.getElementById("notificationBtn")?.addEventListener("click", () => {
+    alert("No new notifications.");
+  });
+
+  const search = document.getElementById("searchInput");
+  search?.addEventListener("input", () => {
+    const q = search.value.trim().toLowerCase();
+    document.querySelectorAll(".activity-card, .event-card, .feature-card").forEach(card => {
+      card.style.display = !q || card.textContent.toLowerCase().includes(q) ? "" : "none";
+    });
+  });
+
+  const sections = document.querySelectorAll("section[id]");
+  const navLinks = document.querySelectorAll(".navbar a");
+
+  window.addEventListener("scroll", () => {
+    let current = "";
+    sections.forEach(section => {
+      if (window.scrollY >= section.offsetTop - 130) current = section.id;
+    });
+    navLinks.forEach(link => {
+      link.classList.toggle("active", link.getAttribute("href") === "#" + current);
+    });
+  });
+});
